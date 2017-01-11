@@ -1,0 +1,13 @@
+{
+  "name": "public",
+  "dependencies": {
+    "angular": "^1.6.1",
+    "angular-animate": "^1.6.1",
+    "angular-aria": "^1.6.1",
+    "angular-fullscreen": "^2.0.0",
+    "angular-material": "^1.1.1",
+    "angular-resource": "^1.6.1",
+    "angular-route": "^1.6.1",
+    "socket.io": "^1.7.2"
+  }
+}

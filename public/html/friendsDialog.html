@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="../css/friendsDialog.css" />
+<md-dialog class="friends-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">person</md-icon>
+    <h2 style="padding-left: 12px;">Friends</h2>
+    <span flex></span>
+    <md-button aria-label="Add Friend" ng-click="parentScope.showAddFriendDialog($event)">
+      <md-icon class="md-material-icon toolbar-icon">add_circle</md-icon>
+      Add Friend
+    </md-button>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <md-list class="friends-list">
+    <md-list-item ng-repeat="friend in parentScope.User.friends | orderBy:['-statusId', 'username']">
+      <div class="friends-avatar-img" style="background-image: url(images/avatar.png)"></div>
+      <div layout="column" class="friends-avatar-text-div" flex>
+        <label class="friends-avatar-text-username" flex>{{friend.username}}</label>
+        <div class="friends-avatar-text-status" layout="row" flex>
+          <md-icon class="md-material-icon status-icon" ng-class="parentScope.User.getStatusClass(friend.statusId)">lens</md-icon>
+          <label class="status-icon-text" ng-class="parentScope.User.getStatusClass(friend.statusId)">{{parentScope.User.getStatusText(friend.statusId)}}</label>
+        </div>
+      </div>
+      <md-button class="md-icon-button" ng-click="parentScope.onRemoveFriend(friend.username)">
+        <md-icon class="md-material-icon friends-avatar-options">more_vert</md-icon>
+      </md-button>
+    </md-list-item>
+  </md-list>
+  <md-list class="friends-list">
+    <md-list-item ng-repeat="friend in parentScope.User.pendingFriendRequests | orderBy:['username']">
+      <div class="friends-avatar-img" style="background-image: url(images/avatar.png)"></div>
+      <div layout="column" class="friends-avatar-text-div" flex>
+        <label class="friends-avatar-text-username" flex>{{friend.username}}</label>
+      </div>
+      <md-button ng-click="parentScope.onPendingFriendResponse(true, friend.username)">
+        <md-icon class="md-material-icon friends-avatar-options status-icon-online">check</md-icon>
+        Accept
+      </md-button>
+      <md-button ng-click="parentScope.onPendingFriendResponse(false, friend.username)">
+        <md-icon class="md-material-icon friends-avatar-options status-icon-busy">close</md-icon>
+        Decline
+      </md-button>
+    </md-list-item>
+  </md-list>
+</md-dialog>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sideboard</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="node_modules/angular-material/angular-material.min.css" />
+</head>
+
+<body ng-app="WebApp" ng-controller="AppController" layout="column">
+
+  <section layout="row" flex>
+    <span flex></span>
+    <section layout="column" flex>
+      <span flex></span>
+      <md-card>
+        <md-toolbar class="toolbar md-toolbar-tools">
+          <md-icon class="md-material-icon toolbar-icon">lock_outline</md-icon>
+          <h2 style="padding-left: 12px;">Login</h2>
+          <span flex></span>
+          <md-button ng-href="#">Forgot password?</md-button>
+          <span flex></span>
+          <md-button ng-href="/register">
+            <md-icon class="md-material-icon toolbar-icon">create</md-icon>
+            Create account
+          </md-button>
+        </md-toolbar>
+        <section layout="column">
+          <% if(errors.length > 0){ %>
+            <% errors.forEach(function(error){ %>
+              <div class="error-flash" flex>
+                <md-icon class="md-material-icon error-flash-icon">error</md-icon>
+                <span class="error-flash-text"><%= error %></span>
+              </div>
+            <% }); %>
+          <% } %>
+
+          <% if(success){ %>
+            <div class="success-flash" flex>
+              <md-icon class="md-material-icon success-flash-icon">check_circle</md-icon>
+              <span class="success-flash-text"><%= success %></span>
+            </div>
+          <% } %>
+        </section>
+        <md-card-content>
+          <form action="/login" method="post" layout="column">
+            <md-input-container>
+              <label>Username</label>
+              <input ng-model="login.username" name="username" type="username">
+            </md-input-container>
+            <md-input-container>
+              <label>Password</label>
+              <input ng-model="login.password" name="password" type="password">
+            </md-input-container>
+            <md-button class="md-raised md-primary" type="submit" flex>Login</md-button>
+          </form>
+        </md-card-content>
+      </md-card>
+      <span flex></span>
+    </section>
+    <span flex></span>
+  </section>
+
+  <script src="node_modules/angular/angular.min.js"></script>
+  <script src="node_modules/angular-animate/angular-animate.js"></script>
+  <script src="node_modules/angular-aria/angular-aria.min.js"></script>
+  <script src="node_modules/angular-fullscreen/angular-fullscreen.js"></script>
+  <script src="node_modules/angular-material/angular-material.min.js"></script>
+  <script src="node_modules/socket.io-client/dist/socket.io.min.js"></script>
+  <script src="index.js"></script>
+</body>
+
+</html>

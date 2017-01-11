@@ -1,0 +1,67 @@
+/*Friends Dialog*/
+  .friends-dialog {
+    width: 400px;
+    min-height: 160px !important;
+    background-color: var(--grey-50);
+  }
+
+  .friends-list-content {
+    max-height: 500px !important;
+  }
+
+  .friends-list md-list-item {
+    padding: 4px;
+    margin-bottom: 6px;
+      background-color: var(--grey-200);
+  }
+
+  .friends-list md-list-item:hover {
+    background-color: var(--grey-300);
+  }
+
+  .friends-avatar-img {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    margin: 5px !important;
+    background-size: cover;
+    border-radius: 24px;
+  }
+
+  .friends-avatar-text-div {
+    color: var(--grey-900);
+    margin-left: 4px;
+    padding: 6px;
+  }
+
+  .friends-avatar-text-username {
+    font-size: 18px;
+  }
+
+  .friends-avatar-text-status {
+    font-size: 14px;
+  }
+
+  .friends-avatar-options {
+    font-size: 24px !important;
+    color: var(--grey-900);
+  }
+
+/*Add Friend Dialog*/
+  .addfriend-dialog {
+    width: 400px;
+    min-height: 160px !important;
+    background-color: var(--grey-50);
+  }
+
+  .addfriend-search {
+    margin: 8px !important;
+  }
+
+  .addfriend-search .addfriend-search-container {
+    height: 0px !important;
+  }
+
+  .addfriend-search .md-icon-button {
+    margin-top: 8px !important;
+  }

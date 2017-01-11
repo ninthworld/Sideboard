@@ -1,0 +1,258 @@
+/*Global Vars*/
+:root {
+  --red-500: #F44336;
+  --green-500: #4CAF50;
+  --amber-500: #FFC107;
+
+  --blue-600: #1E88E5;
+
+  --grey-50: #fafafa;
+  --grey-100: #f5f5f5;
+  --grey-200: #eeeeee;
+  --grey-300: #e0e0e0;
+  --grey-400: #bdbdbd;
+  --grey-500: #9e9e9e;
+  --grey-600: #757575;
+  --grey-700: #616161;
+  --grey-800: #424242;
+  --grey-900: #212121;
+}
+
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+/*Toolbar*/
+  .toolbar {
+    background-color: var(--blue-600) !important;
+    color: var(--grey-50) !important;
+  }
+
+  /*Logo*/
+  .toolbar .logo {
+  }
+
+  /*Logo States*/
+  .toolbar .logo-closed {
+      width: 58px;
+      overflow: hidden;
+      transition: all 0.5s ease-in-out;
+  }
+
+  .toolbar-icon .logo-closed {
+    line-height: 22px;
+    font-size: 22px;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .toolbar .logo-opened {
+    width: 280px;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .toolbar-icon .logo-opened {
+    line-height: 22px;
+    font-size: 32px;
+    transition: all 0.5s ease-in-out;
+  }
+
+  /*Logo Text*/
+  .toolbar .logo-text {
+    padding-left: 16px;
+  }
+
+/*Navbar*/
+  .navbar {
+    background-color: var(--grey-900);
+  }
+
+  /*Navbar States*/
+  .navbar-closed {
+    width: 58px;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .navbar-opened {
+    width: 280px;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
+
+  /*Navbar Text*/
+  .navbar .navbar-text {
+    font-size: 14px !important;
+    color: var(--grey-300) !important;
+  }
+
+  .navbar-closed .navbar-text {
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .navbar-closed .avatar-text-div {
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .navbar-opened .avatar-text-div {
+    opacity: 1;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .navbar-opened .navbar-text {
+    opacity: 1;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .navbar md-list-item:hover .navbar-text {
+    color: var(--grey-50) !important;
+  }
+
+    /*Navbar Icons*/
+  .navbar-icon {
+    font-size: 16px !important;
+    color: var(--grey-300) !important;
+  }
+
+  .navbar-icon md-list-item:hover {
+    color: var(--grey-50) !important;
+  }
+
+/*Avatar*/
+  .avatar {
+    background-color: var(--grey-900);
+    cursor: default;
+  }
+
+  .avatar:hover {
+    background-color: var(--grey-700);
+    cursor: pointer;
+  }
+
+  .avatar-status-icon {
+    position: relative;
+    top: 32px;
+    left: -16px;
+  }
+
+  .avatar-img {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    margin: 5px !important;
+    background-size: cover;
+    border-radius: 24px;
+  }
+
+  .avatar-text-div {
+    color: var(--grey-50);
+    margin-left: 4px;
+    padding: 6px;
+  }
+
+  .avatar-text-username {
+    font-size: 18px;
+  }
+
+  .avatar-text-status {
+    font-size: 14px;
+  }
+
+  /*Avatar Profile List*/
+  .avatar-profile {
+    background-color: var(--grey-50);
+  }
+
+  .avatar-profile-opened {
+    height: 294px;
+    opacity: 1;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .avatar-profile-closed {
+    height: 0px;
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .avatar-profile-icon {
+    font-size: 16px !important;
+    color: var(--grey-900) !important;
+  }
+
+  .avatar-profile-text {
+    font-size: 14px !important;
+    color: var(--grey-900) !important;
+  }
+
+  .avatar-text-status .status-icon-text {
+    margin-left: -8px !important;
+  }
+
+/*Status*/
+  .status-icon {
+    font-size: 12px !important;
+    line-height: 22px !important;
+    margin: 0px !important;
+    padding: 0px !important;
+  }
+
+  .status-icon-text {
+    font-size: 12px !important;
+    line-height: 22px !important;
+  }
+
+  .status-icon-online {
+    color: var(--green-500) !important;
+  }
+
+  .status-icon-away {
+    color: var(--amber-500) !important;
+  }
+
+  .status-icon-busy {
+    color: var(--red-500) !important;
+  }
+
+  .status-icon-invisible {
+    color: var(--grey-500) !important;
+  }
+
+  .status-icon-offline {
+    color: var(--grey-700) !important;
+  }
+
+/*Flashes*/
+  .error-flash {
+    background-color: var(--red-500) !important;
+    padding: 8px;
+    margin-top: 4px;
+  }
+
+  .error-flash-icon {
+    color: var(--grey-50) !important;
+  }
+
+  .error-flash-text {
+    font-size: 16px !important;
+    color: var(--grey-50) !important;
+    margin-left: 8px;
+  }
+
+  .success-flash {
+    background-color: var(--green-500) !important;
+    padding: 8px;
+    margin-top: 4px;
+  }
+
+  .success-flash-icon {
+    color: var(--grey-50) !important;
+  }
+
+  .success-flash-text {
+    font-size: 16px !important;
+    color: var(--grey-50) !important;
+    margin-left: 8px;
+  }

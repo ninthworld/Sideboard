@@ -1,0 +1,87 @@
+<md-sidenav class="navbar" ng-mouseenter="Navbar.onMouseEnter()" ng-mouseleave="Navbar.onMouseLeave()" ng-class="Navbar.getNavClass()" md-is-locked-open="true" md-whiteframe="1">
+  <md-list flex>
+    <div layout="row" class="avatar" ng-click="Navbar.Profile.onToggle()">
+      <div class="avatar-img" style="background-image: url(images/avatar.png)"></div>
+      <md-icon class="md-material-icon status-icon avatar-status-icon" ng-class="User.getStatusClass(User.getStatus())" ng-hide="Navbar.isOpen()">lens</md-icon>
+      <div layout="column" class="avatar-text-div" ng-show="Navbar.isOpen()" flex>
+        <label class="avatar-text-username" flex>{{User.username}}</label>
+        <div class="avatar-text-status" layout="row" flex>
+          <md-icon class="md-material-icon status-icon" ng-class="User.getStatusClass(User.getStatus())">lens</md-icon>
+          <label class="status-icon-text" ng-class="User.getStatusClass(User.getStatus())">{{User.getStatusText(User.getStatus())}}</label>
+        </div>
+      </div>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">{{(Navbar.Profile.isOpen() ? 'expand_less' : 'expand_more')}}</md-icon>
+    </div>
+    <md-list class="avatar-profile" ng-show="Navbar.Profile.isOpen()" ng-class="Navbar.Profile.getProfileClass()">
+      <md-list-item class="status-button" ng-click="onSetStatusId(1)">
+        <md-icon class="md-material-icon status-icon status-icon-online">lens</md-icon>
+        <span class="status-icon-text status-icon-online">Online</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="onSetStatusId(2)">
+        <md-icon class="md-material-icon status-icon status-icon-away">lens</md-icon>
+        <span class="status-icon-text status-icon-away">Away</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="onSetStatusId(3)">
+        <md-icon class="md-material-icon status-icon status-icon-busy">lens</md-icon>
+        <span class="status-icon-text status-icon-busy">Busy</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="onSetStatusId(4)">
+        <md-icon class="md-material-icon status-icon status-icon-invisible">lens</md-icon>
+        <span class="status-icon-text status-icon-invisible">Invisible</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item ng-click="null">
+        <md-icon class="md-material-icon avatar-profile-icon">account_circle</md-icon>
+        <span class="avatar-profile-text">Profile</span>
+        <span flex></span>
+        <md-icon class="md-material-icon avatar-profile-icon">chevron_right</md-icon>
+      </md-list-item>
+      <md-list-item ng-href="/logout">
+        <md-icon class="md-material-icon avatar-profile-icon">exit_to_app</md-icon>
+        <span class="avatar-profile-text">Logout</span>
+        <span flex></span>
+      </md-list-item>
+    </md-list>
+
+    <md-list-item ng-href="/">
+      <md-icon class="md-material-icon navbar-icon">home</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Dashboard</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-href="/lobby">
+      <md-icon class="md-material-icon navbar-icon">format_list_bulleted</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Lobby</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">filter_none</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Decks</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">videogame_asset</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Games</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="showFriendsDialog($event)">
+      <md-icon class="md-material-icon navbar-icon">person</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Friends</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">sms</md-icon>
+      <span class="navbar-text" ng-show="Navbar.isOpen()">Messages</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+  </md-list>
+</md-sidenav>

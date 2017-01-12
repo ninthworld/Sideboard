@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include("partials/head") %>
+  <link rel="stylesheet" href="css/lobby.css" />
+</head>
+
+<body ng-app="WebApp" ng-controller="AppController" layout="row">
+  <section ng-controller="LobbyController" layout="column" flex>
+    <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
+      <%- include("partials/toolbar") %>
+
+      <div class="md-toolbar-tools" flex>
+        <h2>Lobby</h2>
+        <span flex></span>
+      </div>
+      <div class="md-toolbar-tools lobbychat-toolbar" ng-class="LobbyChat.getToolbarClass()">
+        <md-button class="md-icon-button" aria-label="Lobby Chat" ng-click="LobbyChat.onToggle()">
+          <md-icon class="md-material-icon toolbar-icon">{{(LobbyChat.isOpen() ? 'subdirectory_arrow_right' : 'subdirectory_arrow_left')}}</md-icon>
+          <md-tooltip md-direction="bottom" class="large">{{(LobbyChat.isOpen() ? 'Hide Lobby Chat' : 'Show Lobby Chat')}}</md-tooltip>
+        </md-button>
+        <label class="lobbychat-toolbar-label" ng-show="LobbyChat.isOpen()">Lobby Chat</label>
+      </div>
+    </md-toolbar>
+
+    <section layout="row" flex>
+      <%- include("partials/navbar") %>
+
+      <md-content layout="row" flex>
+        <md-content layout="column" flex>
+
+          <md-content layout="row" class="md-padding">
+            <md-button class="md-fab md-primary">
+              <md-icon class="md-material-icon">add</md-icon>
+              <md-tooltip md-direction="right" class="large">Create New Game</md-tooltip>
+            </md-button>
+
+            <md-content layout="row" flex style="">
+              <md-chips ng-model="chips" readonly="false" md-removable="true" style="margin-left: 24px; margin-top: 12px;" flex>
+                <label>Chips</label>
+                <md-chip-template>
+                  <strong>{{$chip}}</strong>
+                </md-chip-template>
+              </md-chips>
+                <md-button>
+                  <md-icon style="md-material-icon">filter_list</md-icon>
+                  Filter
+                </md-button>
+            </md-content>
+          </md-content>
+
+          <md-card>
+            <md-card-content layout="row" flex>
+              <md-button style="width: 80px;">
+                <md-icon class="md-material-icon">lock</md-icon>
+                <md-tooltip md-direction="top" class="large">Locked</md-tooltip>
+              </md-button>
+
+              <md-button class="md-padding status-icon-away" style="width: 100px;">
+                Waiting
+              </md-button>
+
+              <span class="md-padding">ninthworld's game</span>
+
+              <span flex></span>
+
+              <md-button style="width: 100px;">
+                Commander
+                <md-tooltip md-direction="top" class="large">Format</md-tooltip>
+              </md-button>
+              <md-button style="width: 100px;">
+                FFA
+                <md-tooltip md-direction="top" class="large">Type</md-tooltip>
+              </md-button>
+              <md-button style="width: 100px;">
+                3 Players
+                <md-tooltip md-direction="top" class="large">Players</md-tooltip>
+              </md-button>
+
+              <md-button class="md-raised">
+                Join Game
+              </md-button>
+            </md-card-content>
+          </md-card>
+          <md-card>
+            <md-card-content layout="row" flex>
+              <md-button style="width: 80px;">
+                <md-icon class="md-material-icon">lock_open</md-icon>
+                <md-tooltip md-direction="top" class="large">Open</md-tooltip>
+              </md-button>
+              <md-button class="md-padding status-icon-online" style="width: 100px;">
+                In Progress
+              </md-button>
+              <span class="md-padding">a game</span>
+
+              <span flex></span>
+
+              <md-button style="width: 100px;">
+                Standard
+                <md-tooltip md-direction="top" class="large">Format</md-tooltip>
+              </md-button>
+              <md-button style="width: 100px;">
+                Teams
+                <md-tooltip md-direction="top" class="large">Type</md-tooltip>
+              </md-button>
+              <md-button style="width: 100px;">
+                1v1
+                <md-tooltip md-direction="top" class="large">Players</md-tooltip>
+              </md-button>
+
+              <md-button class="md-raised">
+                Join Game
+              </md-button>
+            </md-card-content>
+          </md-card>
+        </md-content>
+
+        <md-content layout="column" class="lobbychat" ng-class="LobbyChat.getClass()" md-whiteframe="1">
+          <md-list class="lobbychat-list" flex>
+            <md-list-item ng-repeat="user in LobbyChat.getUsers() | orderBy:['-statusId', 'username']">
+              <div class="lobbychat-list-avatar-img" style="background-image: url(images/avatar.png)"></div>
+              <div layout="column" class="lobbychat-list-avatar-text-div" flex>
+                <label class="lobbychat-list-avatar-text-username" flex>{{user.username}}</label>
+                <div class="lobbychat-list-avatar-text-status" layout="row" flex>
+                  <md-icon class="md-material-icon status-icon" ng-class="User.getStatusClass(user.statusId)">lens</md-icon>
+                  <label class="status-icon-text" ng-class="User.getStatusClass(user.statusId)">{{User.getStatusText(user.statusId)}}</label>
+                </div>
+              </div>
+              <md-menu>
+                <md-button class="md-icon-button" ng-click="openMenu($mdOpenMenu, $event)">
+                  <md-icon class="md-material-icon lobbychat-list-avatar-options">more_vert</md-icon>
+                </md-button>
+                <md-menu-content>
+                  <md-menu-item>
+                    <md-button ng-click="null">
+                      <md-icon class="md-material-icon lobbychat-list-avatar-options">add_circle</md-icon>
+                      Send Friend Request
+                    </md-button>
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+            </md-list-item>
+          </md-list>
+          <md-content layout="column" class="lobbychat-chatbox" flex>
+            <md-list class="lobbychat-chatbox-display" flex>
+              <md-list-item ng-repeat="message in LobbyChat.messages">
+                <p><b>{{message.username}}:</b> {{message.text}}</p>
+              </md-list-item>
+            </md-list>
+            <md-content layout="row" class="lobbychat-chatbox-input">
+              <md-input-container class="lobbychat-chatbox-input-container" flex>
+                <label><i>Chat Message</i></label>
+                <textarea class="lobbychat-chatbox-input-textarea" ng-model="LobbyChat.messageText" name="search" type="text" ng-enter="onSendLobbyChatMessage(LobbyChat.messageText)"></textarea>
+              </md-input-container>
+              <md-button class="md-raised md-primary" ng-click="onSendLobbyChatMessage(LobbyChat.messageText)">
+                Send
+              </md-button>
+            </md-content>
+          </md-content>
+        </md-content>
+      </md-content>
+    </section>
+
+    <%- include("partials/scripts") %>
+    <script src="lobby.js"></script>
+  </section>
+</body>
+
+</html>

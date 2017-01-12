@@ -1,137 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sideboard</title>
-  <link rel="stylesheet" href="css/index.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="node_modules/angular-material/angular-material.min.css" />
+  <%- include("partials/head") %>
 </head>
 
 <body ng-app="WebApp" ng-controller="AppController" layout="column">
 
   <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
-    <div layout="row" class="logo md-toolbar-tools" ng-class="Navbar.getLogoClass()">
-      <md-icon class="md-material-icon toolbar-icon">polymer</md-icon>
-      <span class="logo-text" ng-show="Navbar.isOpen()">Sideboard</span>
-      <span flex></span>
-    </div>
-    <div class="md-toolbar-tools">
-      <md-button class="md-icon-button" aria-label="Menu" ng-click="Navbar.onToggle()">
-        <md-icon class="md-material-icon toolbar-icon">{{(Navbar.isOpen() ? 'arrow_back' : 'menu')}}</md-icon>
-        <md-tooltip md-direction="bottom" class="large">{{(Navbar.isOpen() ? 'Hide Menu' : 'Show Menu')}}</md-tooltip>
-      </md-button>
+    <%- include("partials/toolbar") %>
 
-      <md-button class="md-icon-button" aria-label="Fullscreen" ng-click="Fullscreen.onToggle()">
-        <md-icon class="md-material-icon toolbar-icon">{{(Fullscreen.isFullscreen() ? 'fullscreen_exit' : 'fullscreen')}}</md-icon>
-        <md-tooltip md-direction="bottom" class="large">{{(Fullscreen.isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen')}}</md-tooltip>
-      </md-button>
-
+    <div class="md-toolbar-tools" flex>
       <h2>Dashboard</h2>
       <span flex></span>
     </div>
   </md-toolbar>
 
   <section layout="row" flex>
-    <md-sidenav class="navbar" ng-mouseenter="Navbar.onMouseEnter()" ng-mouseleave="Navbar.onMouseLeave()" ng-class="Navbar.getNavClass()" md-is-locked-open="true" md-whiteframe="1">
-      <md-list flex>
-        <div layout="row" class="avatar" ng-click="Navbar.Profile.onToggle()">
-          <div class="avatar-img" style="background-image: url(images/avatar.png)"></div>
-          <md-icon class="md-material-icon status-icon avatar-status-icon" ng-class="User.getStatusClass(User.statusId)" ng-hide="Navbar.isOpen()">lens</md-icon>
-          <div layout="column" class="avatar-text-div" ng-show="Navbar.isOpen()" flex>
-            <label class="avatar-text-username" flex>{{User.username}}</label>
-            <div class="avatar-text-status" layout="row" flex>
-              <md-icon class="md-material-icon status-icon" ng-class="User.getStatusClass(User.statusId)">lens</md-icon>
-              <label class="status-icon-text" ng-class="User.getStatusClass(User.statusId)">{{User.getStatusText(User.statusId)}}</label>
-            </div>
-          </div>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">{{(Navbar.Profile.isOpen() ? 'expand_less' : 'expand_more')}}</md-icon>
-        </div>
-        <md-list class="avatar-profile" ng-show="Navbar.Profile.isOpen()" ng-class="Navbar.Profile.getProfileClass()">
-          <md-list-item class="status-button" ng-click="onSetStatusId(1)">
-            <md-icon class="md-material-icon status-icon status-icon-online">lens</md-icon>
-            <span class="status-icon-text status-icon-online">Online</span>
-            <span flex></span>
-          </md-list-item>
-          <md-list-item class="status-button" ng-click="onSetStatusId(2)">
-            <md-icon class="md-material-icon status-icon status-icon-away">lens</md-icon>
-            <span class="status-icon-text status-icon-away">Away</span>
-            <span flex></span>
-          </md-list-item>
-          <md-list-item class="status-button" ng-click="onSetStatusId(3)">
-            <md-icon class="md-material-icon status-icon status-icon-busy">lens</md-icon>
-            <span class="status-icon-text status-icon-busy">Busy</span>
-            <span flex></span>
-          </md-list-item>
-          <md-list-item class="status-button" ng-click="onSetStatusId(4)">
-            <md-icon class="md-material-icon status-icon status-icon-invisible">lens</md-icon>
-            <span class="status-icon-text status-icon-invisible">Invisible</span>
-            <span flex></span>
-          </md-list-item>
-          <md-list-item ng-click="null">
-            <md-icon class="md-material-icon avatar-profile-icon">account_circle</md-icon>
-            <span class="avatar-profile-text">Profile</span>
-            <span flex></span>
-            <md-icon class="md-material-icon avatar-profile-icon">chevron_right</md-icon>
-          </md-list-item>
-          <md-list-item ng-href="/logout">
-            <md-icon class="md-material-icon avatar-profile-icon">backspace</md-icon>
-            <span class="avatar-profile-text">Logout</span>
-            <span flex></span>
-          </md-list-item>
-        </md-list>
+    <%- include("partials/navbar") %>
 
-        <md-list-item ng-click="null">
-          <md-icon class="md-material-icon navbar-icon">home</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Dashboard</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-        <md-list-item ng-click="null">
-          <md-icon class="md-material-icon navbar-icon">format_list_bulleted</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Lobby</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-        <md-list-item ng-click="null">
-          <md-icon class="md-material-icon navbar-icon">filter_none</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Decks</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-        <md-list-item ng-click="null">
-          <md-icon class="md-material-icon navbar-icon">videogame_asset</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Games</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-        <md-list-item ng-click="showFriendsDialog($event)">
-          <md-icon class="md-material-icon navbar-icon">person</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Friends</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-        <md-list-item ng-click="null">
-          <md-icon class="md-material-icon navbar-icon">sms</md-icon>
-          <span class="navbar-text" ng-show="Navbar.isOpen()">Messages</span>
-          <span flex></span>
-          <md-icon class="md-material-icon navbar-icon" ng-show="Navbar.isOpen()">chevron_right</md-icon>
-        </md-list-item>
-      </md-list>
-    </md-sidenav>
     <md-content layout="column" flex>
-      <!-- Hello -->
+      
     </md-content>
   </section>
 
-  <script src="node_modules/angular/angular.min.js"></script>
-  <script src="node_modules/angular-animate/angular-animate.js"></script>
-  <script src="node_modules/angular-aria/angular-aria.min.js"></script>
-  <script src="node_modules/angular-fullscreen/angular-fullscreen.js"></script>
-  <script src="node_modules/angular-material/angular-material.min.js"></script>
-  <script src="node_modules/socket.io-client/dist/socket.io.min.js"></script>
-  <script src="index.js"></script>
+  <%- include("partials/scripts") %>
 </body>
 
 </html>

@@ -15,7 +15,7 @@
   </md-toolbar>
 
   <md-list class="friends-list">
-    <md-list-item ng-repeat="friend in parentScope.User.friends | orderBy:['-statusId', 'username']">
+    <md-list-item ng-repeat="friend in parentScope.User.getFriends() | orderBy:['-statusId', 'username']">
       <div class="friends-avatar-img" style="background-image: url(images/avatar.png)"></div>
       <div layout="column" class="friends-avatar-text-div" flex>
         <label class="friends-avatar-text-username" flex>{{friend.username}}</label>
@@ -24,9 +24,19 @@
           <label class="status-icon-text" ng-class="parentScope.User.getStatusClass(friend.statusId)">{{parentScope.User.getStatusText(friend.statusId)}}</label>
         </div>
       </div>
-      <md-button class="md-icon-button" ng-click="parentScope.onRemoveFriend(friend.username)">
-        <md-icon class="md-material-icon friends-avatar-options">more_vert</md-icon>
-      </md-button>
+      <md-menu>
+        <md-button class="md-icon-button" ng-click="parentScope.openMenu($mdOpenMenu, $event)">
+          <md-icon class="md-material-icon friends-avatar-options">more_vert</md-icon>
+        </md-button>
+        <md-menu-content>
+          <md-menu-item>
+            <md-button ng-click="parentScope.showRemoveFriendConfirmDialog($event, friend.username)">
+              <md-icon class="md-material-icon friends-avatar-options">remove_circle_outline</md-icon>
+              Remove Friend
+            </md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
     </md-list-item>
   </md-list>
   <md-list class="friends-list">

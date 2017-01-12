@@ -2,32 +2,53 @@
 
 var WebApp = angular.module("WebApp", ['ngMaterial', 'ngAnimate', 'FBAngular']);
 
-WebApp.controller("AppController", function($scope, $interval, $http, Fullscreen, $mdDialog, socket){
+WebApp.controller("AppController", function($rootScope, $scope, $interval, $http, Fullscreen, $mdDialog, socket){
+  $rootScope.users = [];
+  $rootScope.getUser = function(username){
+    for(var i=0; i<$rootScope.users.length;i++){
+      if($rootScope.users[i].username == username) return $rootScope.users[i];
+    }
+    return {username: "null", statusId: 0};
+  };
+  $rootScope.setUser = function(username, statusId){
+    for(var i=0; i<$rootScope.users.length;i++){
+      if($rootScope.users[i].username == username){
+        $rootScope.users[i].statusId = statusId;
+        return true;
+      }
+    }
+    $rootScope.users.push({username: username, statusId: statusId});
+    return false;
+  };
 
+  $scope.Fullscreen = Fullscreen;
   $scope.User = {
     username: "",
     friends: [],
     pendingFriendRequests: [],
-    statusId: 0,
+    //statusId: 0,
     _texts: ["Offline", "Online", "Away", "Busy", "Invisible"],
     getStatusClass: function(id){
       return "status-icon-" + this._texts[id].toLowerCase();
     },
     getStatusText: function(id){
       return this._texts[id];
+    },
+    getStatus: function(){
+      return $rootScope.getUser(this.username).statusId;
+    },
+    getFriends: function(){
+      var friends = [];
+      for(var i=0; i<this.friends.length; i++){
+        var friend = $rootScope.getUser(this.friends[i].username);
+        friends.push(friend);
+      }
+      return friends;
     }
   };
-  $scope.Fullscreen = {
-    onToggle: function(){
-      if(Fullscreen.isEnabled()){
-        Fullscreen.cancel();
-      }else{
-        Fullscreen.all();
-      }
-    },
-    isFullscreen: function(){
-      Fullscreen.isEnabled();
-    }
+  $scope.FriendSearch = {
+    searchText: "",
+    users: []
   };
   $scope.Navbar = {
     _mouse: false,
@@ -64,55 +85,61 @@ WebApp.controller("AppController", function($scope, $interval, $http, Fullscreen
       return ((this._mouse || this._toggle) ? 'logo-opened' : 'logo-closed');
     }
   };
-  $scope.FriendSearch = {
-    searchText: "",
-    users: []
-  };
 
   socket.on("connect", function(){
-    socket.on("me:user:init", function(data){
+    socket.on("user.info.me", function(data){
       $scope.User.username = data.username;
-      $scope.User.statusId = data.statusId;
-      $scope.User.friends = data.friends;
+      $rootScope.setUser(data.username, data.statusId);
+      //$scope.User.statusId = data.statusId;
+      //$scope.User.friends = data.friends;
+      $scope.User.friends = [];
+      for(var i=0; i<data.friends.length; i++){
+        $scope.User.friends.push({username: data.friends[i].username});
+        $rootScope.setUser(data.friends[i].username, data.friends[i].statusId);
+      }
       $scope.User.pendingFriendRequests = data.pendingFriendRequests;
     });
 
-    socket.on("me:status:update", function(data){
-      $scope.User.statusId = data.statusId;
+    socket.on("user.status", function(data){
+      // for(var i=0; i<$scope.User.friends.length; i++){
+      //   if($scope.User.friends[i].username == data.username){
+      //     $scope.User.friends[i].statusId = data.statusId;
+      //   }
+      // }
+      $rootScope.setUser(data.username, data.statusId);
     });
 
-    socket.on("all:status:update", function(data){
-      for(var i=0; i<$scope.User.friends.length; i++){
-        if($scope.User.friends[i].username == data.username){
-          $scope.User.friends[i].statusId = data.statusId;
-        }
-      }
-    });
-
-    socket.on("me:user:searchResults", function(data){
-      $scope.FriendSearch.users = data.users;
+    socket.on("user.search.results", function(data){
+      $scope.FriendSearch.users = data;
     });
   });
 
   $scope.onSetStatusId = function(statusId){
-    socket.emit("me:status:set", {statusId: statusId});
+    socket.emit("user.status.set", {statusId: statusId});
   };
 
   $scope.onRemoveFriend = function(friendUsername){
-    socket.emit("me:friend:remove", {username: friendUsername});
-  };
-
-  $scope.onFriendSearch = function(searchText){
-    socket.emit("me:user:search", {username: searchText});
+    socket.emit("user.friends.remove", {username: friendUsername});
   };
 
   $scope.onSendFriendRequest = function(friendUsername){
-    socket.emit("me:friend:request:send", {username: friendUsername});
+    socket.emit("user.friends.request.send", {username: friendUsername});
   };
 
   $scope.onPendingFriendResponse = function(confirm, friendUsername){
-    socket.emit("me:friend:request:response", {confirm: confirm, username: friendUsername});
+    socket.emit("user.friends.request.response", {username: friendUsername, confirm: confirm});
   };
+
+  $scope.onFriendSearch = function(searchText){
+    if(searchText != null && !( /^[\s]*$/.test(searchText) )){
+      socket.emit("user.search", {username: searchText});
+    }
+  };
+
+  // $scope.onSendLobbyChatMessage = function(message){
+  //   socket.emit("lobby.chat.sendMessage", {text: message});
+  //   $scope.LobbyChat.messageText = "";
+  // };
 
   $scope.showFriendsDialog = function(ev){
     $mdDialog.show({
@@ -138,6 +165,28 @@ WebApp.controller("AppController", function($scope, $interval, $http, Fullscreen
         $parentScope: $scope
       }
     });
+  };
+
+  $scope.showRemoveFriendConfirmDialog = function(ev, friendName){
+    $mdDialog.show(
+        $mdDialog.confirm()
+          .title("Confirm")
+          .textContent("Are you sure you want to remove " + friendName + " from your friends?")
+          .targetEvent(ev)
+          .ok("Remove")
+          .cancel("Cancel")
+      ).then(function(){
+        // Confirmed
+        $scope.onRemoveFriend(friendName);
+      }, function(){
+        // Cancelled
+      });
+  };
+
+  var originatorEv;
+  $scope.openMenu = function($mdOpenMenu, ev){
+    originatorEv = ev;
+    $mdOpenMenu(ev);
   };
 });
 

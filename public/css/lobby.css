@@ -1,0 +1,122 @@
+/*Lobby Chat*/
+  .lobbychat {
+    background-color: var(--grey-100);
+    color: var(--grey-900);
+    padding: 0px !important;
+
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .lobbychat-closed {
+    min-width: 0px !important;
+    width: 0px !important;
+    opacity: 0;
+  }
+
+  .lobbychat-opened {
+    width: 380px;
+    opacity: 1;
+  }
+
+  .lobbychat-toolbar {
+    background-color: var(--blue-700);
+    padding: 15px !important;
+
+    transition: all 0.5s ease-in-out;
+  }
+
+  .lobbychat-toolbar-label {
+    white-space: nowrap;
+  }
+
+  .lobbychat-toolbar-closed {
+    width: 58px;
+  }
+
+  .lobbychat-toolbar-opened {
+    width: 380px;
+  }
+
+/*Lobby Chat List*/
+  .lobbychat-list {
+    overflow-y: auto;
+  }
+
+  .lobbychat-list md-list-item {
+    padding: 4px;
+    margin-bottom: 6px;
+    background-color: var(--grey-200);
+  }
+
+  .lobbychat-list md-list-item:hover {
+    background-color: var(--grey-300);
+  }
+
+  .lobbychat-list-avatar-img {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    margin: 5px !important;
+    background-size: cover;
+    border-radius: 24px;
+  }
+
+  .lobbychat-list-avatar-text-div {
+    color: var(--grey-900);
+    margin-left: 4px;
+    padding: 6px;
+  }
+
+  .lobbychat-list-avatar-text-username {
+    font-size: 18px;
+  }
+
+  .lobbychat-list-avatar-text-status {
+    font-size: 14px;
+  }
+
+  .lobbychat-list-avatar-options {
+    font-size: 24px !important;
+    color: var(--grey-900);
+  }
+
+/*Lobby Chat Chatbox*/
+  .lobbychat-chatbox {
+    background-color: var(--grey-100);
+    color: var(--grey-900);
+    margin-top: 8px !important;
+  }
+
+  .lobbychat-chatbox-display {
+    background-color: var(--grey-100);
+    overflow-y: auto;
+    display: block;
+  }
+
+  .lobbychat-chatbox-display md-list-item {
+    margin-bottom: 8px !important;
+    padding: 8px !important;
+    color: var(--grey-900) !important;
+    font-size: 14px !important;
+    line-height: 24px !important;
+  }
+
+  .lobbychat-chatbox-display md-list-item:nth-child(odd) {
+    background-color: var(--grey-200);
+  }
+
+  .lobbychat-chatbox-input {
+    background-color: var(--grey-300);
+
+  }
+
+  .lobbychat-chatbox-input .lobbychat-chatbox-input-container {
+    padding: 0px !important;
+    margin: 20px 0px 0px 8px !important;
+  }
+
+  .lobbychat-chatbox-input .lobbychat-chatbox-input-textarea {
+    background-color: var(--grey-300);
+    margin-top: 16px !important;
+  }

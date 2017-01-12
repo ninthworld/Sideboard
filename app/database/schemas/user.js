@@ -9,12 +9,19 @@ const DEFAULT_USER_AVATAR = "/images/avatar.png";
 var UserSchema = new Mongoose.Schema({
   username: { type: String, required: true },
   password: { type: String, default: null },
-  statusId: {type: Number, default: 1},
+  email: { type: String, default: null },
+  statusId: {type: Number, default: 1},     // (0) Offline, (1) Online, (2) Away, (3) Busy, (4) Invisible
   avatar:  { type: String, default: DEFAULT_USER_AVATAR },
   friends: [{
     _id: { type: Mongoose.Schema.ObjectId, required: true }
   }],
   pendingFriendRequests: [{
+    _id: { type: Mongoose.Schema.ObjectId, required: true }
+  }],
+  games: [{
+    _id: { type: Mongoose.Schema.ObjectId, required: true }
+  }],
+  decks: [{
     _id: { type: Mongoose.Schema.ObjectId, required: true }
   }]
 });

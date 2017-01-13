@@ -29,90 +29,106 @@
       <md-content layout="row" flex>
         <md-content layout="column" flex>
 
-          <md-content layout="row" class="md-padding">
+          <md-content layout="row" class="md-toolbar-tools lobby-list-tools">
             <md-button class="md-fab md-primary">
               <md-icon class="md-material-icon">add</md-icon>
               <md-tooltip md-direction="right" class="large">Create New Game</md-tooltip>
             </md-button>
-
-            <md-content layout="row" flex style="">
-              <md-chips ng-model="chips" readonly="false" md-removable="true" style="margin-left: 24px; margin-top: 12px;" flex>
-                <label>Chips</label>
-                <md-chip-template>
-                  <strong>{{$chip}}</strong>
-                </md-chip-template>
-              </md-chips>
-                <md-button>
-                  <md-icon style="md-material-icon">filter_list</md-icon>
-                  Filter
-                </md-button>
+            <md-content layout="row" class="lobby-list-search" flex>
+              <md-autocomplete class="lobby-list-search-input-container" md-search-text="GameSearch.searchText" md-items="item in []" md-item-text="" placeholder="Search" flex>
+              </md-autocomplete>
+              <md-button class="md-primary" ng-click="GameSearch.toggleFilter()" ng-class="(GameSearch.showFilter ? 'lobby-list-filter-button-show' : '')">
+                <md-icon class="md-material-icon">filter_list</md-icon>
+                Filter
+              </md-button>
             </md-content>
           </md-content>
+          <md-content layout="row" class="md-toolbar-tools lobby-list-filter" ng-show="GameSearch.showFilter" ng-class="(GameSearch.showFilter ? '' : 'lobby-list-filter-hide')" flex>
+            <md-icon class="md-material-icon" style="color: white;">filter_list</md-icon>
+            <label class="fancy-label">Filter</label>
 
-          <md-card>
-            <md-card-content layout="row" flex>
-              <md-button style="width: 80px;">
-                <md-icon class="md-material-icon">lock</md-icon>
-                <md-tooltip md-direction="top" class="large">Locked</md-tooltip>
-              </md-button>
+            <span flex></span>
 
-              <md-button class="md-padding status-icon-away" style="width: 100px;">
-                Waiting
-              </md-button>
+            <label class="fancy-label">Format</label>
+            <md-chips ng-model="GameSearch.filters.format.chips" md-autocomplete-snap md-transform-chip="GameSearch.filters.transformChip($chip)" md-require-match="true" class="lobby-list-filter-format">
+              <md-autocomplete
+                md-selected-item="GameSearch.filters.format.selected"
+                md-search-text="GameSearch.filters.format.searchText"
+                md-items="item in GameSearch.filters.format.querySearch()"
+                md-item-text="item.name"
+                md-min-length="0"
+                placeholder="Format"
+                ng-enter="GameSearch.filters.format.addChip()">
+                <md-item-template>
+                  <span md-highlight-text="GameSearch.filters.format.searchText" md-highlight-flags="^i">{{item.name}}</span>
+                </md-item-template>
+              </md-autocomplete>
+              <md-chip-template>
+                <span>
+                  <strong>{{$chip.name}}</strong>
+                </span>
+              </md-chip-template>
+            </md-chips>
 
-              <span class="md-padding">ninthworld's game</span>
+            <label class="fancy-label">Type</label>
+            <md-chips ng-model="GameSearch.filters.type.chips" md-autocomplete-snap md-transform-chip="GameSearch.filters.transformChip($chip)" md-require-match="true" class="lobby-list-filter-type">
+              <md-autocomplete
+                md-selected-item="GameSearch.filters.type.selected"
+                md-search-text="GameSearch.filters.type.searchText"
+                md-items="item in GameSearch.filters.type.querySearch()"
+                md-item-text="item.name"
+                md-min-length="0"
+                placeholder="Type"
+                ng-enter="GameSearch.filters.type.addChip()">
+                <md-item-template>
+                  <span md-highlight-text="GameSearch.filters.type.searchText" md-highlight-flags="^i">{{item.name}}</span>
+                </md-item-template>
+              </md-autocomplete>
+              <md-chip-template>
+                <span>
+                  <strong>{{$chip.name}}</strong>
+                </span>
+              </md-chip-template>
+            </md-chips>
 
-              <span flex></span>
+          </md-content>
 
-              <md-button style="width: 100px;">
-                Commander
-                <md-tooltip md-direction="top" class="large">Format</md-tooltip>
-              </md-button>
-              <md-button style="width: 100px;">
-                FFA
-                <md-tooltip md-direction="top" class="large">Type</md-tooltip>
-              </md-button>
-              <md-button style="width: 100px;">
-                3 Players
-                <md-tooltip md-direction="top" class="large">Players</md-tooltip>
-              </md-button>
+          <md-content class="lobby-list-content">
+            <md-card class="lobby-list-card" ng-repeat="game in FilterLobby() | orderBy:['isLocked', 'title', 'game.isRunning'] | filter:GameSearch.searchText">
+              <md-card-content layout="row" class="md-toolbar-tools" flex>
 
-              <md-button class="md-raised">
-                Join Game
-              </md-button>
-            </md-card-content>
-          </md-card>
-          <md-card>
-            <md-card-content layout="row" flex>
-              <md-button style="width: 80px;">
-                <md-icon class="md-material-icon">lock_open</md-icon>
-                <md-tooltip md-direction="top" class="large">Open</md-tooltip>
-              </md-button>
-              <md-button class="md-padding status-icon-online" style="width: 100px;">
-                In Progress
-              </md-button>
-              <span class="md-padding">a game</span>
+                <md-button class="md-icon-button lobby-list-lock">
+                  <md-icon class="md-material-icon">{{(game.isLocked ? 'lock' : 'lock_open')}}</md-icon>
+                  <md-tooltip md-direction="top" class="large">Password Required</md-tooltip>
+                </md-button>
 
-              <span flex></span>
+                <label class="fancy-label lobby-list-status" ng-class="(game.game.isRunning ? 'status-icon-online' : 'status-icon-away')">
+                  {{(game.game.isRunning ? 'In Progress' : 'Waiting')}}
+                </label>
 
-              <md-button style="width: 100px;">
-                Standard
-                <md-tooltip md-direction="top" class="large">Format</md-tooltip>
-              </md-button>
-              <md-button style="width: 100px;">
-                Teams
-                <md-tooltip md-direction="top" class="large">Type</md-tooltip>
-              </md-button>
-              <md-button style="width: 100px;">
-                1v1
-                <md-tooltip md-direction="top" class="large">Players</md-tooltip>
-              </md-button>
+                <span class="md-padding lobby-list-title">{{game.title}}</span>
 
-              <md-button class="md-raised">
-                Join Game
-              </md-button>
-            </md-card-content>
-          </md-card>
+                <span flex></span>
+
+                <label class="fancy-label">
+                  {{Game.format.toString(game.config.formatId)}}
+                  <md-tooltip md-direction="top" class="large">Format</md-tooltip>
+                </label>
+                <label class="fancy-label">
+                  {{Game.type.toString(game.config.typeId)}}
+                  <md-tooltip md-direction="top" class="large">Type</md-tooltip>
+                </label>
+                <label class="fancy-label">
+                  {{Game.playerCount.toString(game.config.typeCount, game.config.typeId)}}
+                  <md-tooltip md-direction="top" class="large">Players</md-tooltip>
+                </label>
+
+                <md-button class="md-raised" class="lobby-list-join">
+                  Join Game
+                </md-button>
+              </md-card-content>
+            </md-card>
+          </md-content>
         </md-content>
 
         <md-content layout="column" class="lobbychat" ng-class="LobbyChat.getClass()" md-whiteframe="1">

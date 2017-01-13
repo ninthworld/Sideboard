@@ -70,27 +70,54 @@ router.post("/login", passport.authenticate("local", {
 router.post("/register", function(req, res, next){
   var credentials = {
     username: req.body.username,
-    password: req.body.password
+    password: req.body.password,
+    password2: req.body.password2,
+    email: req.body.email
   };
 
-  if(credentials.username === "" || credentials.password === ""){
+  if(credentials.username === "" || credentials.password === "" || credentials.password2 === "" || credentials.email === ""){
     req.flash("error", "Missing credentials");
     res.redirect("/register");
+  }else if(credentials.password != credentials.password2){
+    req.flash("error", "Passwords don't match");
+    res.redirect("/register");
   }else{
-    User.findOne_CB({"username": new RegExp("^" + credentials.username + "$", "i")}, function(err, user){
-      if(err) throw err;
-      if(user){
-        req.flash("error", "Username already exists.");
-        res.redirect("/register");
-      }else{
-        User.create_CB(credentials, function(err, newUser){
-          if(err) throw err;
+    User.find({"email": credentials.email}).exec()
+      .then(function(users1){
+        if(users1.length > 0){
+          req.flash("error", "Email already exists.");
+          res.redirect("/register");
+        }else{
+          return User.find({"username": new RegExp("^" + credentials.username + "$", "i")}).exec()
+            .then(function(users2){
+              if(users2.length > 0){
+                req.flash("error", "Username already exists.");
+                res.redirect("/register");
+              }else{
+                User.create_CB(credentials, function(err, newUser){
+                  if(err) throw err;
 
-          req.flash("success", "Account successfully created. Please log in.");
-          res.redirect("/login");
-        });
-      }
-    });
+                  req.flash("success", "Account successfully created. Please log in.");
+                  res.redirect("/login");
+                });
+              }
+            });
+        }
+      }).catch(err => {throw err});
+    // User.findOne_CB({"username": new RegExp("^" + credentials.username + "$", "i")}, function(err, user){
+    //   if(err) throw err;
+    //   if(user){
+    //     req.flash("error", "Username already exists.");
+    //     res.redirect("/register");
+    //   }else{
+    //     User.create_CB(credentials, function(err, newUser){
+    //       if(err) throw err;
+    //
+    //       req.flash("success", "Account successfully created. Please log in.");
+    //       res.redirect("/login");
+    //     });
+    //   }
+    // });
   }
 });
 

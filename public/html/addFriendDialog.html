@@ -14,13 +14,12 @@
     </md-button>
   </md-toolbar>
 
-  <content layout="row" class="addfriend-search">
-    <md-input-container class="addfriend-search-container" flex>
-      <label>Search</label>
-      <input ng-model="parentScope.FriendSearch.searchText" name="search" type="text" ng-enter="parentScope.onFriendSearch(parentScope.FriendSearch.searchText)">
-    </md-input-container>
-    <md-button class="md-icon-button" aria-label="search" ng-click="parentScope.onFriendSearch(parentScope.FriendSearch.searchText)">
+  <content layout="row" class="addfriend-search md-toolbar-tools">
+    <md-autocomplete class="addfriend-search-container" md-search-text="parentScope.FriendSearch.searchText" md-items="item in []" md-item-text="" placeholder="Search" ng-enter="parentScope.onFriendSearch(parentScope.FriendSearch.searchText)" flex>
+    </md-autocomplete>
+    <md-button class="md-primary" aria-label="search" ng-click="parentScope.onFriendSearch(parentScope.FriendSearch.searchText)">
       <md-icon class="md-material-icon toolbar-icon">search</md-icon>
+      Search
     </md-button>
   </content>
 
@@ -35,7 +34,7 @@
             <label class="status-icon-text" ng-class="parentScope.User.getStatusClass(friend.statusId)">{{parentScope.User.getStatusText(friend.statusId)}}</label>
           </div> -->
         </div>
-        <md-button ng-click="parentScope.onSendFriendRequest(user.username)">
+        <md-button class="md-primary" ng-click="parentScope.onSendFriendRequest(user.username)">
           <md-icon class="md-material-icon friends-avatar-options">add_circle</md-icon>
           Send Friend Request
         </md-button>

@@ -1,3 +1,108 @@
+/*Lobby List*/
+  .lobby-list-tools {
+     /*min-height: 100px !important;*/
+     /*min-height: 72px !important;*/
+     min-height: 72px !important;
+  }
+
+  .lobby-list-search {
+  }
+
+  .lobby-list-search-input-container {
+    margin: 16px 18px !important;
+  }
+
+  .lobby-list-filter-button-show {
+    background-color: var(--blue-800);
+    color: white !important;
+  }
+
+  .lobby-list-filter-button-show md-icon {
+    color: white !important;
+  }
+
+  .lobby-list-filter {
+    background-color: var(--blue-800);
+    color: white !important;
+    min-height: 64px !important;
+    opacity: 1;
+    overflow: hidden;
+    /*min-height: 100px !important;
+    max-height: 100px !important;*/
+    transition: all 0.5s ease-in-out;
+  }
+
+  .lobby-list-filter-hide {
+    background-color: var(--blue-800);
+    color: white !important;
+    min-height: 0px !important;
+    max-height: 0px !important;
+    opacity: 0;
+    /*min-height: 100px !important;
+    max-height: 100px !important;*/
+  }
+
+  .lobby-list-filter-format {
+    background-color: white !important;
+    padding-left: 8px;
+    border-radius: 2px;
+  }
+
+  .lobby-list-filter-type {
+    background-color: white !important;
+    padding-left: 8px;
+    border-radius: 2px;
+  }
+
+  .lobby-list-chips {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+  }
+
+  .lobby-list-content {
+    overflow-y: auto;
+  }
+
+  .lobby-list-card {
+    background-color: white;
+    margin: 16px !important;
+  }
+
+  .lobby-list-card:nth-child(odd) {
+    background-color: var(--grey-200);
+  }
+
+  .lobby-list-card:hover {
+    background-color: var(--grey-300);
+  }
+
+  .lobby-list-lock {
+
+  }
+
+  .lobby-list-status {
+    width: 100px;
+  }
+
+  .lobby-list-title {
+    font-size: 16px;
+  }
+
+  .lobby-list-format {
+    width: 100px;
+  }
+
+  .lobby-list-type {
+    width: 100px;
+  }
+
+  .lobby-list-player {
+    width: 100px;
+  }
+
+  .lobby-list-join {
+  }
+
 /*Lobby Chat*/
   .lobbychat {
     background-color: var(--grey-100);

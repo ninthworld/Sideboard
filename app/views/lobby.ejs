@@ -2,183 +2,205 @@
 <html>
 <head>
   <%- include("partials/head") %>
-  <link rel="stylesheet" href="css/lobby.css" />
+  <link rel="stylesheet" href="./assets/css/lobby.css" />
 </head>
 
-<body ng-app="WebApp" ng-controller="AppController" layout="row">
-  <section ng-controller="LobbyController" layout="column" flex>
-    <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
-      <%- include("partials/toolbar") %>
+<body ng-app="App" ng-controller="MainController as main" layout="row" ng-init="<% if(promptPass != ''){ %>main.showGamePasswordPrompt($event, '<%= promptPass %>')<% } %>">
+  <section ng-controller="SidenavController as sidenav" layout="column" flex>
+    <section ng-controller="LobbyController as lobby" layout="column" flex>
+      <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
+        <%- include("partials/toolbar") %>
 
-      <div class="md-toolbar-tools" flex>
-        <h2>Lobby</h2>
-        <span flex></span>
-      </div>
-      <div class="md-toolbar-tools lobbychat-toolbar" ng-class="LobbyChat.getToolbarClass()">
-        <md-button class="md-icon-button" aria-label="Lobby Chat" ng-click="LobbyChat.onToggle()">
-          <md-icon class="md-material-icon toolbar-icon">{{(LobbyChat.isOpen() ? 'subdirectory_arrow_right' : 'subdirectory_arrow_left')}}</md-icon>
-          <md-tooltip md-direction="bottom" class="large">{{(LobbyChat.isOpen() ? 'Hide Lobby Chat' : 'Show Lobby Chat')}}</md-tooltip>
-        </md-button>
-        <label class="lobbychat-toolbar-label" ng-show="LobbyChat.isOpen()">Lobby Chat</label>
-      </div>
-    </md-toolbar>
+        <div class="md-toolbar-tools" flex>
+          <h2>Lobby</h2>
+          <span flex></span>
+        </div>
+        <div class="md-toolbar-tools lobbychat-toolbar" ng-class="lobby.toolbarService.getClass()">
+          <md-button class="md-icon-button" aria-label="Lobby Chat" ng-click="lobby.sidebarService.onToggle()">
+            <md-icon class="md-material-icon toolbar-icon">{{(lobby.sidebarService.isOpen() ? 'subdirectory_arrow_right' : 'subdirectory_arrow_left')}}</md-icon>
+            <md-tooltip md-direction="bottom" class="large">{{(lobby.sidebarService.isOpen() ? 'Hide Lobby Chat' : 'Show Lobby Chat')}}</md-tooltip>
+          </md-button>
+          <label class="lobbychat-toolbar-label" ng-show="lobby.sidebarService.isOpen()">Lobby Chat</label>
+        </div>
+      </md-toolbar>
 
-    <section layout="row" flex>
-      <%- include("partials/navbar") %>
+      <section layout="row" flex>
+        <%- include("partials/sidenav") %>
 
-      <md-content layout="row" flex>
-        <md-content layout="column" flex>
+        <md-content layout="row" flex>
+          <md-content layout="column" flex>
+            <% if(errors.length > 0){ %>
+              <% errors.forEach(function(error){ %>
+                <div class="error-flash">
+                  <md-icon class="md-material-icon error-flash-icon">error</md-icon>
+                  <span class="error-flash-text"><%= error %></span>
+                </div>
+              <% }); %>
+            <% } %>
 
-          <md-content layout="row" class="md-toolbar-tools lobby-list-tools">
-            <md-button class="md-fab md-primary">
-              <md-icon class="md-material-icon">add</md-icon>
-              <md-tooltip md-direction="right" class="large">Create New Game</md-tooltip>
-            </md-button>
-            <md-content layout="row" class="lobby-list-search" flex>
-              <md-autocomplete class="lobby-list-search-input-container" md-search-text="GameSearch.searchText" md-items="item in []" md-item-text="" placeholder="Search" flex>
-              </md-autocomplete>
-              <md-button class="md-primary" ng-click="GameSearch.toggleFilter()" ng-class="(GameSearch.showFilter ? 'lobby-list-filter-button-show' : '')">
-                <md-icon class="md-material-icon">filter_list</md-icon>
-                Filter
+            <md-content layout="row" class="md-toolbar-tools lobby-list-tools">
+              <md-button class="md-fab md-primary" ng-click="main.showCreateNewGameDialog($event)">
+                <md-icon class="md-material-icon">add</md-icon>
+                <md-tooltip md-direction="right" class="large">Create New Game</md-tooltip>
               </md-button>
+              <md-button class="md-icon-button" ng-click="lobby.socketService.onRefreshGames()">
+                <md-icon class="md-material-icon">refresh</md-icon>
+                <md-tooltip md-direction="right" class="large">Refresh</md-tooltip>
+              </md-button>
+              <md-content layout="row" class="lobby-list-search" flex>
+                <md-autocomplete class="lobby-list-search-input-container"
+                  md-search-text="lobby.searchService.searchText"
+                  md-items="item in []"
+                  md-item-text=""
+                  placeholder="Search"
+                  flex>
+                </md-autocomplete>
+                <md-button class="md-primary" ng-click="lobby.filterService.onToggle()" ng-class="(lobby.filterService.isOpen() ? 'lobby-list-filter-button-show' : '')">
+                  <md-icon class="md-material-icon">filter_list</md-icon>
+                  Filter
+                </md-button>
+              </md-content>
+            </md-content>
+            <md-content layout="row" class="md-toolbar-tools lobby-list-filter" ng-show="lobby.filterService.isOpen()" ng-class="(lobby.filterService.isOpen() ? '' : 'lobby-list-filter-hide')" flex>
+              <md-icon class="md-material-icon" style="color: white;">filter_list</md-icon>
+              <label class="fancy-label">Filter</label>
+
+              <span flex></span>
+
+              <label class="fancy-label">Format</label>
+              <md-chips ng-model="lobby.filterService.formatChips" md-autocomplete-snap md-transform-chip="lobby.filterService.transformChip($chip)" md-require-match="true" class="lobby-list-filter-format">
+                <md-autocomplete
+                  md-selected-item="lobby.filterService.formatSelected"
+                  md-search-text="lobby.filterService.formatSearchText"
+                  md-items="item in lobby.filterService.formatQuerySearch()"
+                  md-item-text="item"
+                  md-min-length="0"
+                  placeholder="Format"
+                  ng-enter="lobby.filterService.addFormatChip()">
+                  <md-item-template>
+                    <span md-highlight-text="lobby.filterService.formatSearchText" md-highlight-flags="^i">{{item}}</span>
+                  </md-item-template>
+                </md-autocomplete>
+                <md-chip-template>
+                  <span>
+                    <strong>{{$chip.name}}</strong>
+                  </span>
+                </md-chip-template>
+              </md-chips>
+
+              <label class="fancy-label">Type</label>
+              <md-chips ng-model="lobby.filterService.typeChips" md-autocomplete-snap md-transform-chip="lobby.filterService.transformChip($chip)" md-require-match="true" class="lobby-list-filter-type">
+                <md-autocomplete
+                  md-selected-item="lobby.filterService.typeSelected"
+                  md-search-text="lobby.filterService.typeSearchText"
+                  md-items="item in lobby.filterService.typeQuerySearch()"
+                  md-item-text="item"
+                  md-min-length="0"
+                  placeholder="Type"
+                  ng-enter="lobby.filterService.addTypeChip()">
+                  <md-item-template>
+                    <span md-highlight-text="lobby.filterService.typeSearchText" md-highlight-flags="^i">{{item}}</span>
+                  </md-item-template>
+                </md-autocomplete>
+                <md-chip-template>
+                  <span>
+                    <strong>{{$chip.name}}</strong>
+                  </span>
+                </md-chip-template>
+              </md-chips>
+
+            </md-content>
+
+            <md-content class="lobby-list-content">
+              <md-card class="lobby-list-card" ng-repeat="game in lobby.filterService.getGames() | orderBy:['isLocked', 'title', 'game.isRunning'] | filter:lobby.searchService.searchText">
+                <md-card-content layout="row" class="md-toolbar-tools" flex>
+
+                  <md-button class="md-icon-button lobby-list-lock">
+                    <md-icon class="md-material-icon">{{(game.isLocked ? 'lock' : 'lock_open')}}</md-icon>
+                    <md-tooltip md-direction="top" class="large">{{(game.isLocked ? 'Password Required' : 'Open')}}</md-tooltip>
+                  </md-button>
+
+                  <label class="fancy-label lobby-list-status" ng-class="(game.game.isRunning ? 'status-icon-online' : 'status-icon-away')">
+                    {{(game.game.isRunning ? 'In Progress' : 'Waiting')}}
+                  </label>
+
+                  <span class="md-padding lobby-list-title">{{game.title}}</span>
+
+                  <span flex></span>
+
+                  <label class="fancy-label">
+                    {{lobby.gameFormatFactory.getFormatText(game.config.formatId)}}
+                    <md-tooltip md-direction="top" class="large">Format</md-tooltip>
+                  </label>
+                  <label class="fancy-label">
+                    {{lobby.gameTypeFactory.getTypeText(game.config.typeId)}}
+                    <md-tooltip md-direction="top" class="large">Type</md-tooltip>
+                  </label>
+                  <label class="fancy-label">
+                    {{lobby.gameTypeFactory.getPlayerCountText(game.config.typeCount, game.config.typeId)}}
+                    <md-tooltip md-direction="top" class="large">Players</md-tooltip>
+                  </label>
+
+                  <md-button class="md-raised" class="lobby-list-join" ng-click="main.onJoinGame($event, game.id, game.isLocked)">
+                    Join Game
+                  </md-button>
+                </md-card-content>
+              </md-card>
             </md-content>
           </md-content>
-          <md-content layout="row" class="md-toolbar-tools lobby-list-filter" ng-show="GameSearch.showFilter" ng-class="(GameSearch.showFilter ? '' : 'lobby-list-filter-hide')" flex>
-            <md-icon class="md-material-icon" style="color: white;">filter_list</md-icon>
-            <label class="fancy-label">Filter</label>
 
-            <span flex></span>
-
-            <label class="fancy-label">Format</label>
-            <md-chips ng-model="GameSearch.filters.format.chips" md-autocomplete-snap md-transform-chip="GameSearch.filters.transformChip($chip)" md-require-match="true" class="lobby-list-filter-format">
-              <md-autocomplete
-                md-selected-item="GameSearch.filters.format.selected"
-                md-search-text="GameSearch.filters.format.searchText"
-                md-items="item in GameSearch.filters.format.querySearch()"
-                md-item-text="item.name"
-                md-min-length="0"
-                placeholder="Format"
-                ng-enter="GameSearch.filters.format.addChip()">
-                <md-item-template>
-                  <span md-highlight-text="GameSearch.filters.format.searchText" md-highlight-flags="^i">{{item.name}}</span>
-                </md-item-template>
-              </md-autocomplete>
-              <md-chip-template>
-                <span>
-                  <strong>{{$chip.name}}</strong>
-                </span>
-              </md-chip-template>
-            </md-chips>
-
-            <label class="fancy-label">Type</label>
-            <md-chips ng-model="GameSearch.filters.type.chips" md-autocomplete-snap md-transform-chip="GameSearch.filters.transformChip($chip)" md-require-match="true" class="lobby-list-filter-type">
-              <md-autocomplete
-                md-selected-item="GameSearch.filters.type.selected"
-                md-search-text="GameSearch.filters.type.searchText"
-                md-items="item in GameSearch.filters.type.querySearch()"
-                md-item-text="item.name"
-                md-min-length="0"
-                placeholder="Type"
-                ng-enter="GameSearch.filters.type.addChip()">
-                <md-item-template>
-                  <span md-highlight-text="GameSearch.filters.type.searchText" md-highlight-flags="^i">{{item.name}}</span>
-                </md-item-template>
-              </md-autocomplete>
-              <md-chip-template>
-                <span>
-                  <strong>{{$chip.name}}</strong>
-                </span>
-              </md-chip-template>
-            </md-chips>
-
-          </md-content>
-
-          <md-content class="lobby-list-content">
-            <md-card class="lobby-list-card" ng-repeat="game in FilterLobby() | orderBy:['isLocked', 'title', 'game.isRunning'] | filter:GameSearch.searchText">
-              <md-card-content layout="row" class="md-toolbar-tools" flex>
-
-                <md-button class="md-icon-button lobby-list-lock">
-                  <md-icon class="md-material-icon">{{(game.isLocked ? 'lock' : 'lock_open')}}</md-icon>
-                  <md-tooltip md-direction="top" class="large">Password Required</md-tooltip>
-                </md-button>
-
-                <label class="fancy-label lobby-list-status" ng-class="(game.game.isRunning ? 'status-icon-online' : 'status-icon-away')">
-                  {{(game.game.isRunning ? 'In Progress' : 'Waiting')}}
-                </label>
-
-                <span class="md-padding lobby-list-title">{{game.title}}</span>
-
-                <span flex></span>
-
-                <label class="fancy-label">
-                  {{Game.format.toString(game.config.formatId)}}
-                  <md-tooltip md-direction="top" class="large">Format</md-tooltip>
-                </label>
-                <label class="fancy-label">
-                  {{Game.type.toString(game.config.typeId)}}
-                  <md-tooltip md-direction="top" class="large">Type</md-tooltip>
-                </label>
-                <label class="fancy-label">
-                  {{Game.playerCount.toString(game.config.typeCount, game.config.typeId)}}
-                  <md-tooltip md-direction="top" class="large">Players</md-tooltip>
-                </label>
-
-                <md-button class="md-raised" class="lobby-list-join">
-                  Join Game
-                </md-button>
-              </md-card-content>
-            </md-card>
-          </md-content>
-        </md-content>
-
-        <md-content layout="column" class="lobbychat" ng-class="LobbyChat.getClass()" md-whiteframe="1">
-          <md-list class="lobbychat-list" flex>
-            <md-list-item ng-repeat="user in LobbyChat.getUsers() | orderBy:['-statusId', 'username']">
-              <div class="lobbychat-list-avatar-img" style="background-image: url(images/avatar.png)"></div>
-              <div layout="column" class="lobbychat-list-avatar-text-div" flex>
-                <label class="lobbychat-list-avatar-text-username" flex>{{user.username}}</label>
-                <div class="lobbychat-list-avatar-text-status" layout="row" flex>
-                  <md-icon class="md-material-icon status-icon" ng-class="User.getStatusClass(user.statusId)">lens</md-icon>
-                  <label class="status-icon-text" ng-class="User.getStatusClass(user.statusId)">{{User.getStatusText(user.statusId)}}</label>
+          <md-content layout="column" class="lobbychat" ng-class="lobby.sidebarService.getClass()" md-whiteframe="1">
+            <md-list class="lobbychat-list" flex>
+              <md-list-item ng-repeat="user in lobby.usersService.getUsers() | orderBy:['-statusId', 'username']">
+                <div class="lobbychat-list-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+                <div layout="column" class="lobbychat-list-avatar-text-div" flex>
+                  <label class="lobbychat-list-avatar-text-username" flex>{{user.username}}</label>
+                  <div class="lobbychat-list-avatar-text-status" layout="row" flex>
+                    <md-icon class="md-material-icon status-icon" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">lens</md-icon>
+                    <label class="status-icon-text" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">
+                      {{main.statusFactory.getStatusText(main.usersService.getUserByUsername(user.username).statusId)}}
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <md-menu>
-                <md-button class="md-icon-button" ng-click="openMenu($mdOpenMenu, $event)">
-                  <md-icon class="md-material-icon lobbychat-list-avatar-options">more_vert</md-icon>
-                </md-button>
-                <md-menu-content>
-                  <md-menu-item>
-                    <md-button ng-click="null">
-                      <md-icon class="md-material-icon lobbychat-list-avatar-options">add_circle</md-icon>
-                      Send Friend Request
-                    </md-button>
-                  </md-menu-item>
-                </md-menu-content>
-              </md-menu>
-            </md-list-item>
-          </md-list>
-          <md-content layout="column" class="lobbychat-chatbox" flex>
-            <md-list class="lobbychat-chatbox-display" flex>
-              <md-list-item ng-repeat="message in LobbyChat.messages">
-                <p><b>{{message.username}}:</b> {{message.text}}</p>
+                <md-menu>
+                  <md-button class="md-icon-button" ng-click="main.openMenu($mdOpenMenu, $event)">
+                    <md-icon class="md-material-icon lobbychat-list-avatar-options">more_vert</md-icon>
+                  </md-button>
+                  <md-menu-content>
+                    <md-menu-item>
+                      <md-button ng-click="null">
+                        <md-icon class="md-material-icon lobbychat-list-avatar-options">add_circle</md-icon>
+                        Send Friend Request
+                      </md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
               </md-list-item>
             </md-list>
-            <md-content layout="row" class="lobbychat-chatbox-input">
-              <md-input-container class="lobbychat-chatbox-input-container" flex>
-                <label><i>Chat Message</i></label>
-                <textarea class="lobbychat-chatbox-input-textarea" ng-model="LobbyChat.messageText" name="search" type="text" ng-enter="onSendLobbyChatMessage(LobbyChat.messageText)"></textarea>
-              </md-input-container>
-              <md-button class="md-raised md-primary" ng-click="onSendLobbyChatMessage(LobbyChat.messageText)">
-                Send
-              </md-button>
+            <md-content layout="column" class="lobbychat-chatbox" flex>
+              <md-list class="lobbychat-chatbox-display" flex>
+                <md-list-item ng-repeat="message in lobby.chatService.getMessages()">
+                  <p class="lobbychat-chatbox-display-p"><b>{{message.username}}:</b> {{message.text}}</p>
+                </md-list-item>
+              </md-list>
+              <md-content layout="row" class="lobbychat-chatbox-input">
+                <md-input-container class="lobbychat-chatbox-input-container" flex>
+                  <label><i>Chat Message</i></label>
+                  <textarea class="lobbychat-chatbox-input-textarea" ng-model="lobby.chatService.messageText" name="search" type="text" ng-enter="lobby.socketService.onSendLobbyChatMessage(lobby.chatService.messageText)"></textarea>
+                </md-input-container>
+                <md-button class="md-raised md-primary" ng-click="lobby.socketService.onSendLobbyChatMessage(lobby.chatService.messageText)">
+                  Send
+                </md-button>
+              </md-content>
             </md-content>
           </md-content>
         </md-content>
-      </md-content>
-    </section>
+      </section>
 
-    <%- include("partials/scripts") %>
-    <script src="lobby.js"></script>
+      <%- include("partials/scripts") %>
+      <script src="./app/components/lobby/lobby.controller.js"></script>
+      <script src="./app/components/lobby/lobby.service.js"></script>
+    </section>
   </section>
 </body>
 

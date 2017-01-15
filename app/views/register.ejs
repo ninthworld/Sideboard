@@ -4,8 +4,7 @@
   <%- include("partials/head") %>
 </head>
 
-<body ng-app="WebApp" ng-controller="AppController" layout="column">
-
+<body ng-app="App" layout="column">
   <section layout="row" flex>
     <span flex></span>
     <section layout="column" flex>
@@ -41,19 +40,19 @@
           <form action="/register" method="post" layout="column">
             <md-input-container>
               <label>Username</label>
-              <input ng-model="register.username" name="username" type="username">
+              <input name="username" type="username">
             </md-input-container>
             <md-input-container>
               <label>Email</label>
-              <input ng-model="register.email" name="email" type="email">
+              <input name="email" type="email">
             </md-input-container>
             <md-input-container>
               <label>Password</label>
-              <input ng-model="register.password" name="password" type="password">
+              <input name="password" type="password">
             </md-input-container>
             <md-input-container>
               <label>Confirm Password</label>
-              <input ng-model="register.password2" name="password2" type="password">
+              <input name="password2" type="password">
             </md-input-container>
             <md-button class="md-raised md-primary" type="submit" flex>Create Account</md-button>
           </form>

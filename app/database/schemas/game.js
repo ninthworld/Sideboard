@@ -9,9 +9,9 @@ var GameSchema = new Mongoose.Schema({
   title: { type: String, default: null },
   isLocked: { type: Boolean, default: false },
   password: { type: String, default: null },
-  leaderId: { type: Mongoose.Schema.ObjectId, required: true },
+  leaderId: { type: Mongoose.Schema.ObjectId, default: null },
   users: [{
-    _id: { type: Mongoose.Schema.ObjectId, required: true }
+    _id: { type: Mongoose.Schema.ObjectId, default: null }
   }],
   config: {
     typeId: { type: Number, default: 0 },     // (0) Teams, (1) FFA
@@ -21,10 +21,10 @@ var GameSchema = new Mongoose.Schema({
   game: {
     isRunning: { type: Boolean, default: false },
     gameTurn: { type: Number, default: 1 },
-    playerIdTurn: { type: Mongoose.Schema.ObjectId, required: true },
+    playerIdTurn: { type: Mongoose.Schema.ObjectId, default: null },
     players: [{
-      _id: { type: Mongoose.Schema.ObjectId, required: true },
-      deckId: { type: Mongoose.Schema.ObjectId, required: true }
+      _id: { type: Mongoose.Schema.ObjectId, default: null },
+      deckId: { type: Mongoose.Schema.ObjectId, default: null }
     }]
   }
 });
@@ -44,11 +44,28 @@ GameSchema.pre("save", function(next){
   });
 });
 
-UserSchema.methods.validatePassword = function(password, callback){
-  bcrypt.compare(password, this.password, function(err, isMatch){
-    if(err) return callback(err);
-    callback(null, isMatch);
+GameSchema.methods.validatePassword = function(password){
+  return new Promise((resolve, reject) => {
+    if(password == null) return reject(null);
+    bcrypt.compare(password, this.password, (err, isMatch) => {
+      if(err) return reject(err);
+      if(isMatch) return resolve();
+      return reject();
+    });
   });
+
 };
+
+// GameSchema.statics.hashPass = function(data){
+//   return new Promise((resolve, reject) =>
+//     bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
+//       if(err) return reject(err);
+//       bcrypt.hash(data, salt, null, (err, hash) => {
+//         if(err) return reject(err);
+//         return resolve(hash);
+//       });
+//     })
+//   );
+// };
 
 module.exports = Mongoose.model("game", GameSchema);

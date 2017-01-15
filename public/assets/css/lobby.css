@@ -1,7 +1,6 @@
 /*Lobby List*/
   .lobby-list-tools {
-     /*min-height: 100px !important;*/
-     /*min-height: 72px !important;*/
+     overflow: hidden;
      min-height: 72px !important;
   }
 
@@ -61,6 +60,7 @@
 
   .lobby-list-content {
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .lobby-list-card {
@@ -86,6 +86,7 @@
 
   .lobby-list-title {
     font-size: 16px;
+    overflow: hidden;
   }
 
   .lobby-list-format {
@@ -146,6 +147,7 @@
 /*Lobby Chat List*/
   .lobbychat-list {
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .lobbychat-list md-list-item {
@@ -196,7 +198,13 @@
   .lobbychat-chatbox-display {
     background-color: var(--grey-100);
     overflow-y: auto;
+    overflow-x: hidden;
     display: block;
+  }
+
+  .lobbychat-chatbox-display-p {
+    max-width: 340px !important;
+    word-wrap: break-word !important;
   }
 
   .lobbychat-chatbox-display md-list-item {
@@ -216,12 +224,12 @@
 
   }
 
-  .lobbychat-chatbox-input .lobbychat-chatbox-input-container {
+  .lobbychat-chatbox-input-container {
     padding: 0px !important;
     margin: 20px 0px 0px 8px !important;
   }
 
-  .lobbychat-chatbox-input .lobbychat-chatbox-input-textarea {
+  .lobbychat-chatbox-input-textarea {
     background-color: var(--grey-300);
     margin-top: 16px !important;
   }

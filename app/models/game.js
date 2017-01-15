@@ -23,6 +23,10 @@ var find = function(data){
   return gameModel.find(data);
 };
 
+// var hashPass = function(data){
+//   return gameModel.hashPass(data);
+// };
+
 var Type = {
   Teams: 0,
   FFA: 1
@@ -39,7 +43,9 @@ module.exports = {
   create_CB,
   findOne,
   findById,
+  findOneAndUpdate,
   find,
   Type,
   Format
+  // hashPass
 };

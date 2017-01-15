@@ -4,8 +4,7 @@
   <%- include("partials/head") %>
 </head>
 
-<body ng-app="WebApp" ng-controller="AppController" layout="column">
-
+<body ng-app="App" layout="column">
   <section layout="row" flex>
     <span flex></span>
     <section layout="column" flex>
@@ -43,11 +42,11 @@
           <form action="/login" method="post" layout="column">
             <md-input-container>
               <label>Username</label>
-              <input ng-model="login.username" name="username" type="username">
+              <input name="username" type="username">
             </md-input-container>
             <md-input-container>
               <label>Password</label>
-              <input ng-model="login.password" name="password" type="password">
+              <input name="password" type="password">
             </md-input-container>
             <md-button class="md-raised md-primary" type="submit" flex>Login</md-button>
           </form>

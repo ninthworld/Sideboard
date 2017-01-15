@@ -97,110 +97,9 @@ WebApp.controller("LobbyController", function($rootScope, $scope, $timeout, $int
       }
     }
   };
-  $scope.LobbyList = [{
-    title: "Ninth's game",
-    isLocked: true,
-    config: {
-      typeId: 0,
-      typeCount: 8,
-      formatId: 1
-    },
-    game: {
-      isRunning: false
-    }
-  },
-  {
-    title: "buttercup",
-    isLocked: false,
-    config: {
-      typeId: 0,
-      typeCount: 2,
-      formatId: 2
-    },
-    game: {
-      isRunning: false
-    }
-  },
-  {
-    title: "potato",
-    isLocked: true,
-    config: {
-      typeId: 1,
-      typeCount: 1,
-      formatId: 0
-    },
-    game: {
-      isRunning: true
-    }
-  },
-  {
-    title: "WHATS LOVE GOT TO DO GOT TO DO WITH THIS",
-    isLocked: true,
-    config: {
-      typeId: 0,
-      typeCount: 2,
-      formatId: 3
-    },
-    game: {
-      isRunning: false
-    }
-  },
-  {
-    title: "...ooo000 [[XxX Game]] 000ooo...",
-    isLocked: false,
-    config: {
-      typeId: 0,
-      typeCount: 1,
-      formatId: 2
-    },
-    game: {
-      isRunning: false
-    }
-  },
-  {
-    title: "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYyyyyyyyyyyyyyyyyyyyyyYYYYYYYYYYYYYYYYYYYYYYYYY",
-    isLocked: false,
-    config: {
-      typeId: 1,
-      typeCount: 5,
-      formatId: 0
-    },
-    game: {
-      isRunning: true
-    }
-  },
-  {
-    title: "Magic Card Game Commander style",
-    isLocked: true,
-    config: {
-      typeId: 1,
-      typeCount: 4,
-      formatId: 2
-    },
-    game: {
-      isRunning: true
-    }
-  }];
+  $scope.LobbyList = [];
+
   $scope.FilterLobby = function(){
-    // var lobby = [];
-    // if($scope.GameSearch.filters.format.chips.length <= 0 && $scope.GameSearch.filters.type.chips.length <=0) return $scope.LobbyList;
-    // for(var i=0; i<$scope.LobbyList.length; i++){
-    //   var game = $scope.LobbyList[i];
-    //   for(var j=0; j<$scope.GameSearch.filters.format.chips.length; j++){
-    //     var chip = $scope.GameSearch.filters.format.chips[j];
-    //     if(chip.name === $scope.Game.format.toString(game.config.formatId)){
-    //       lobby.push(game);
-    //       break;
-    //     }
-    //   }
-    //   for(var j=0; j<$scope.GameSearch.filters.type.chips.length; j++){
-    //     var chip = $scope.GameSearch.filters.type.chips[j];
-    //     if(chip.name === $scope.Game.type.toString(game.config.typeId)){
-    //       lobby.push(game);
-    //       break;
-    //     }
-    //   }
-    // }
     var lobby = $scope.LobbyList.slice(0);
     for(var i=0; i<$scope.LobbyList.length; i++){
       var game = $scope.LobbyList[i];
@@ -213,7 +112,7 @@ WebApp.controller("LobbyController", function($rootScope, $scope, $timeout, $int
           break;
         }
       }
-      
+
       var hasType = false;
       for(var j=0; j<$scope.GameSearch.filters.type.chips.length; j++){
         var chip = $scope.GameSearch.filters.type.chips[j];
@@ -237,7 +136,6 @@ WebApp.controller("LobbyController", function($rootScope, $scope, $timeout, $int
         $scope.LobbyChat.users.push({username: data[i].username});
         $rootScope.setUser(data[i].username, data[i].statusId);
       }
-      // $scope.LobbyChat.users = data;
     });
 
     socketLobby.on("lobby.chat.message", function(data){
@@ -250,6 +148,10 @@ WebApp.controller("LobbyController", function($rootScope, $scope, $timeout, $int
         container.scrollTop = contentHeight - containerHeight;
       }, 100);
     });
+
+    socketLobby.on("lobby.games", function(data){
+      $scope.LobbyList = data;
+    });
   });
 
   $scope.onSendLobbyChatMessage = function(message){
@@ -257,6 +159,10 @@ WebApp.controller("LobbyController", function($rootScope, $scope, $timeout, $int
       socketLobby.emit("lobby.chat.sendMessage", {text: message});
       $scope.LobbyChat.messageText = "";
     }
+  };
+
+  $scope.onRefreshGames = function(){
+    socketLobby.emit("lobby.games.update", {});
   };
 
   var originatorEv;
@@ -289,13 +195,3 @@ WebApp.factory("socketLobby", function($rootScope){
     }
   };
 });
-
-// WebApp.filter("filterGameList", function($filter){
-//   return function(list, arrayFilter, element){
-//     if(arrayFilter){
-//       return $filter("filter")(list, function(listItem){
-//         return arrayFilter.indexOf(listItem[element]) != -1;
-//       });
-//     }
-//   };
-// });

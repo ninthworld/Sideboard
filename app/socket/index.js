@@ -1,11 +1,12 @@
 'use strict';
 
+var Mongoose = require("mongoose");
 var config = require("../config");
 var redis = require("redis").createClient;
 var adapter = require("socket.io-redis");
 
-// var Room = require("../models/room");
 var User = require("../models/user");
+var Game = require("../models/game");
 
 module.exports = function(app){
   var server = require("http").createServer(app);
@@ -26,7 +27,7 @@ module.exports = function(app){
 
   // Return: UserId from a Socket
   var getUserIdFromSocket = function(socket){
-    if(socket.request.session.passport) return socket.request.session.passport.user;
+    if(socket && socket.request && socket.request.session && socket.request.session.passport) return socket.request.session.passport.user;
     return null;
   };
 
@@ -293,12 +294,43 @@ module.exports = function(app){
     });
   };
 
+  // Send the user the games list
+  // Return: Promise(reject/resolve of success)
+  var sendUserGameList = function(socket){
+    var data = [];
+    return Game.find({}).exec()
+        .then(function(games){
+          return Promise.all(games.map(function(game){
+            data.push({
+              id: game._id,
+              title: game.title,
+              isLocked: game.isLocked,
+              config: {
+                typeId: game.config.typeId,
+                typeCount: game.config.typeCount,
+                formatId: game.config.formatId
+              },
+              game: {
+                isRunning: game.game.isRunning
+              }
+            });
+          }))
+          .then(function(){
+            socket.emit("lobby.games", data);
+          });
+        });
+  };
+
   io.of("/lobby").on("connection", function(socket){
     // If the socket is a logged-in user
     if(getUserIdFromSocket(socket) != null){
+      var _userId = getUserIdFromSocket(socket);
 
       // Send the lobby the user list (now that user has joined)
       sendNamespaceUserList("/lobby", "lobby.chat.users").catch(err => {throw err});
+
+      // Send the user the list of games
+      sendUserGameList(socket).catch(err => {throw err});
 
       // User sends a message to the lobby
       socket.on("lobby.chat.sendMessage", function(data){
@@ -310,9 +342,106 @@ module.exports = function(app){
         }
       });
 
+      // User asks for list of games
+      socket.on("lobby.games.update", function(data){
+        sendUserGameList(socket).catch(err => {throw err});
+      });
+
       socket.on("disconnect", function(){
         // Send the lobby the user list (now that user has left)
         sendNamespaceUserList("/lobby", "lobby.chat.users").catch(err => {throw err});
+      });
+    }
+  });
+
+  var findInArray = function(array, item){
+    return new Promise((resolve, reject) => {
+      Promise.all(array.map(function(i){
+        if(i._id.toString() == item.toString()) resolve();
+      })).then(function(){
+        reject();
+      });
+    });
+  };
+
+  var getOpenSocketsInRoomNamespace = function(room, namespace){
+    var sockets = [];
+    if(io.nsps[namespace] && io.nsps[namespace].adapter && io.nsps[namespace].adapter.rooms[room]){
+      return Promise.all(Object.keys(io.nsps[namespace].adapter.rooms[room].sockets).map(function(socketId){
+        sockets.push(io.sockets.sockets[socketId.replace(namespace+"#","")]);
+      })).then(function(){
+        return Promise.resolve(sockets);
+      });
+    }
+    return Promise.reject();
+  };
+
+  var getArrayOfUserIdInRoomNamespace = function(room, namespace){
+    var userIds = [];
+    return getOpenSocketsInRoomNamespace(room, namespace).then(function(sockets){
+      return Promise.all(sockets.map(function(socket){
+        var uid = getUserIdFromSocket(socket);
+        if(uid != null) userIds.push(uid);
+      })).then(function(){
+        return Promise.resolve(userIds);
+      });
+    });
+  };
+
+  var sendRoomConnectedList = function(room, namespace, broadcast){
+    var users = [];
+    return getArrayOfUserIdInRoomNamespace(room, namespace).then(function(userIds){
+      return Promise.all(userIds.map(function(userId){
+        return User.findById(userId).exec()
+          .then(function(user){
+            return getStatusIdFromUserId(userId).then(function(statusId){
+              users.push({username: user.username, statusId: filterStatusId(statusId)});
+            });
+          });
+      })).then(function(){
+        io.of(namespace).to(room).emit(broadcast, users);
+      });
+    });
+  };
+
+  var sendUserGameInfo = function(socket, gameId){
+    return Game.findById(Mongoose.Types.ObjectId(gameId)).exec()
+      .then(function(game){
+        socket.emit("game.info", game);
+      });
+  };
+
+  io.of("/game").on("connection", function(socket){
+    // If the socket is a logged-in user AND a gameid is sent
+    if(getUserIdFromSocket(socket) != null && socket.handshake.query["gid"] != null && Mongoose.Types.ObjectId.isValid(socket.handshake.query["gid"])){
+      var _userId = getUserIdFromSocket(socket);
+      var _gameId = socket.handshake.query["gid"];
+      var _room = "game_" + _gameId;
+
+      socket.join(_room);
+
+      // Send User Game Info
+      sendUserGameInfo(socket, _gameId).catch(err => {throw err});
+
+      // Send Everyone the list of users connected to the game
+      sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {throw err});
+
+      // User sends a message to the game
+      socket.on("game.chat.sendMessage", function(data){
+        if(data.text != null && !( /^[\s]*$/.test(data.text) )){
+          User.findById(getUserIdFromSocket(socket)).exec()
+            .then(function(user){
+              io.of("/game").to(_room).emit("game.chat.message", {username: user.username, text: data.text});
+            }).catch(err => {throw err});
+        }
+      });
+
+      socket.on("disconnect", function(){
+        // User disconnects from game room
+        socket.leave(_room);
+
+        // Send Everyone the list of users connected to the game
+        sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {console.error("Error: No users in room to broadcast.")});
       });
     }
   });

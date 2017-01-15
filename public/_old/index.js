@@ -2,7 +2,7 @@
 
 var WebApp = angular.module("WebApp", ['ngMaterial', 'ngAnimate', 'FBAngular']);
 
-WebApp.controller("AppController", function($rootScope, $scope, $interval, $http, Fullscreen, $mdDialog, socket){
+WebApp.controller("AppController", function($rootScope, $scope, $interval, $http, Fullscreen, $mdDialog, socket, $window){
   $rootScope.users = [];
   $rootScope.getUser = function(username){
     for(var i=0; i<$rootScope.users.length;i++){
@@ -90,8 +90,6 @@ WebApp.controller("AppController", function($rootScope, $scope, $interval, $http
     socket.on("user.info.me", function(data){
       $scope.User.username = data.username;
       $rootScope.setUser(data.username, data.statusId);
-      //$scope.User.statusId = data.statusId;
-      //$scope.User.friends = data.friends;
       $scope.User.friends = [];
       for(var i=0; i<data.friends.length; i++){
         $scope.User.friends.push({username: data.friends[i].username});
@@ -101,11 +99,6 @@ WebApp.controller("AppController", function($rootScope, $scope, $interval, $http
     });
 
     socket.on("user.status", function(data){
-      // for(var i=0; i<$scope.User.friends.length; i++){
-      //   if($scope.User.friends[i].username == data.username){
-      //     $scope.User.friends[i].statusId = data.statusId;
-      //   }
-      // }
       $rootScope.setUser(data.username, data.statusId);
     });
 
@@ -136,10 +129,18 @@ WebApp.controller("AppController", function($rootScope, $scope, $interval, $http
     }
   };
 
-  // $scope.onSendLobbyChatMessage = function(message){
-  //   socket.emit("lobby.chat.sendMessage", {text: message});
-  //   $scope.LobbyChat.messageText = "";
-  // };
+  $scope.showCreateNewGameDialog = function(ev){
+    $mdDialog.show({
+      controller: "DialogController",
+      templateUrl: "html/createNewGameDialog.html",
+      parent: angular.element(document.body),
+      targetEvent: ev,
+      clickOutsideToClose: true,
+      locals: {
+        $parentScope: $scope
+      }
+    });
+  };
 
   $scope.showFriendsDialog = function(ev){
     $mdDialog.show({
@@ -181,6 +182,32 @@ WebApp.controller("AppController", function($rootScope, $scope, $interval, $http
       }, function(){
         // Cancelled
       });
+  };
+
+  $scope.onJoinGame = function(ev, gameId, isLocked){
+    if(isLocked){
+      $scope.showGamePasswordPrompt(ev, gameId);
+    }else{
+      $window.location.href = "/game?gid=" + gameId;
+    }
+  };
+
+  $scope.showGamePasswordPrompt = function(ev, gameId){
+    $mdDialog.show(
+      $mdDialog.prompt()
+        .title("Password Required")
+        .textContent("")
+        .placeholder("Password")
+        .initialValue("")
+        .targetEvent(ev)
+        .ok("Ok")
+        .cancel("Cancel")
+    ).then(function(password){
+      // Ok
+      $window.location.href = "/game?gid=" + gameId + "&password=" + password;
+    }, function(){
+      // Cancelled
+    });
   };
 
   var originatorEv;
@@ -246,4 +273,43 @@ WebApp.directive('ngEnter', function () {
             }
         });
     };
+});
+
+WebApp.controller("CreateNewGameDialogController", function($scope){
+  $scope.formats = [
+    {name: "Standard", value: 0},
+    {name: "Modern", value: 1},
+    {name: "Commander", value: 2},
+    {name: "Legacy", value: 3}
+  ];
+  $scope.types = [
+    {name: "Teams", value: 0},
+    {name: "FFA", value: 1}
+  ];
+  $scope.typeCounts = [
+    [
+      {name: "1v1", value: 1},
+      {name: "2v2", value: 2},
+      {name: "3v3", value: 3}
+    ],
+    [
+      {name: "3 Players", value: 3},
+      {name: "4 Players", value: 4},
+      {name: "5 Players", value: 5}
+    ]
+  ];
+
+  $scope.title = "";
+  $scope.isLocked = false;
+  $scope.password = "";
+  $scope.formatId = null;
+  $scope.typeId = null;
+  $scope.typeCount = null;
+
+  $scope.getTypeCount = function(){
+    if($scope.typeId != null){
+      return $scope.typeCounts[$scope.typeId];
+    }
+    return [];
+  }
 });

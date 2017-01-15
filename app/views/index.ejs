@@ -4,26 +4,41 @@
   <%- include("partials/head") %>
 </head>
 
-<body ng-app="WebApp" ng-controller="AppController" layout="column">
+<body ng-app="App" ng-controller="MainController as main" layout="column">
+  <section ng-controller="SidenavController as sidenav" layout="column" flex>
+    <section ng-controller="DashboardController as dashboard" layout="column" flex>
 
-  <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
-    <%- include("partials/toolbar") %>
+      <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
+        <%- include("partials/toolbar") %>
 
-    <div class="md-toolbar-tools" flex>
-      <h2>Dashboard</h2>
-      <span flex></span>
-    </div>
-  </md-toolbar>
+        <div class="md-toolbar-tools" flex>
+          <h2>Dashboard</h2>
+          <span flex></span>
 
-  <section layout="row" flex>
-    <%- include("partials/navbar") %>
+        </div>
+      </md-toolbar>
 
-    <md-content layout="column" flex>
-      
-    </md-content>
+      <section layout="row" flex>
+        <%- include("partials/sidenav") %>
+
+        <md-content layout="column" flex>
+          <% if(errors.length > 0){ %>
+            <% errors.forEach(function(error){ %>
+              <div class="error-flash">
+                <md-icon class="md-material-icon error-flash-icon">error</md-icon>
+                <span class="error-flash-text"><%= error %></span>
+              </div>
+            <% }); %>
+          <% } %>
+
+        </md-content>
+      </section>
+
+      <%- include("partials/scripts") %>
+      <script src="./app/components/dashboard/dashboard.controller.js"></script>
+      <script src="./app/components/dashboard/dashboard.service.js"></script>
+    </section>
   </section>
-
-  <%- include("partials/scripts") %>
 </body>
 
 </html>

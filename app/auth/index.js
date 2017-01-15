@@ -14,14 +14,14 @@ module.exports = function(){
   });
 
   passport.deserializeUser(function(id, done){
-    User.findById(id, function(err, user){
+    User.findById_CB(id, function(err, user){
       done(err, user);
     });
   });
 
   passport.use(new LocalStrategy(
     function(username, password, done){
-      User.findOne({username: new RegExp(username, "i")}, function(err, user){
+      User.findOne_CB({username: new RegExp(username, "i")}, function(err, user){
         if(err) return done(err);
         if(!user) return done(null, false, {message: "Incorrect username or password."});
 

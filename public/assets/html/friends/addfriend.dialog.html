@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="../assets/css/friends.css" />
+<md-dialog class="addfriend-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">add_circle</md-icon>
+    <h2 style="padding-left: 12px;">Add Friend</h2>
+    <span flex></span>
+    <md-button aria-label="Friends" ng-click="main.showFriendsDialog($event)">
+      <md-icon class="md-material-icon toolbar-icon">person</md-icon>
+      Friends
+    </md-button>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <content layout="row" class="addfriend-search md-toolbar-tools">
+    <md-autocomplete class="addfriend-search-container"
+      md-search-text="service.searchText"
+      md-items="item in []"
+      md-item-text=""
+      placeholder="Search"
+      ng-enter="main.socketService.onFriendSearch(service.searchText)"
+      flex>
+    </md-autocomplete>
+    <md-button class="md-primary" aria-label="search" ng-click="main.socketService.onFriendSearch(service.searchText)">
+      <md-icon class="md-material-icon toolbar-icon">search</md-icon>
+      Search
+    </md-button>
+  </content>
+
+  <md-content class="friends-list-content">
+    <md-list class="friends-list">
+      <md-list-item ng-repeat="user in service.getUsers() | orderBy:['username']">
+        <div class="friends-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+        <div layout="column" class="friends-avatar-text-div" flex>
+          <label class="friends-avatar-text-username" flex>{{user.username}}</label>
+        </div>
+        <md-button class="md-primary" ng-click="main.socketService.onSendFriendRequest(user.username)">
+          <md-icon class="md-material-icon friends-avatar-options">add_circle</md-icon>
+          Send Friend Request
+        </md-button>
+      </md-list-item>
+    </md-list>
+  </md-content>
+</md-dialog>

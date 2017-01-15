@@ -1,0 +1,93 @@
+<md-sidenav class="navbar"
+  ng-mouseenter="sidenav.service.onMouseEnter()"
+  ng-mouseleave="sidenav.service.onMouseLeave()"
+  ng-class="sidenav.service.getClass()"
+  md-is-locked-open="true"
+  md-whiteframe="1">
+
+  <md-list flex>
+    <div layout="row" class="avatar" ng-click="sidenav.profileService.onToggle()">
+      <div class="avatar-img" style="background-image: url(./assets/images/avatar.png)"></div>
+      <md-icon class="md-material-icon status-icon avatar-status-icon" ng-class="main.statusFactory.getClass(main.userService.getStatusId())" ng-hide="sidenav.service.isOpen()">lens</md-icon>
+      <div layout="column" class="avatar-text-div" ng-show="sidenav.service.isOpen()" flex>
+        <label class="avatar-text-username" flex>{{main.userService.getUsername()}}</label>
+        <div class="avatar-text-status" layout="row" flex>
+          <md-icon class="md-material-icon status-icon" ng-class="main.statusFactory.getClass(main.userService.getStatusId())">lens</md-icon>
+          <label class="status-icon-text" ng-class="main.statusFactory.getClass(main.userService.getStatusId())">{{main.statusFactory.getStatusText(main.userService.getStatusId())}}</label>
+        </div>
+      </div>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">{{(sidenav.profileService.isOpen() ? 'expand_less' : 'expand_more')}}</md-icon>
+    </div>
+    <md-list class="avatar-profile" ng-show="sidenav.profileService.isOpen()" ng-class="sidenav.profileService.getClass()">
+      <md-list-item class="status-button" ng-click="main.socketService.onSetStatusId(1)">
+        <md-icon class="md-material-icon status-icon status-icon-online">lens</md-icon>
+        <span class="status-icon-text status-icon-online">Online</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="main.socketService.onSetStatusId(2)">
+        <md-icon class="md-material-icon status-icon status-icon-away">lens</md-icon>
+        <span class="status-icon-text status-icon-away">Away</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="main.socketService.onSetStatusId(3)">
+        <md-icon class="md-material-icon status-icon status-icon-busy">lens</md-icon>
+        <span class="status-icon-text status-icon-busy">Busy</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item class="status-button" ng-click="main.socketService.onSetStatusId(4)">
+        <md-icon class="md-material-icon status-icon status-icon-invisible">lens</md-icon>
+        <span class="status-icon-text status-icon-invisible">Invisible</span>
+        <span flex></span>
+      </md-list-item>
+      <md-list-item ng-click="null">
+        <md-icon class="md-material-icon avatar-profile-icon">account_circle</md-icon>
+        <span class="avatar-profile-text">Profile</span>
+        <span flex></span>
+        <md-icon class="md-material-icon avatar-profile-icon">chevron_right</md-icon>
+      </md-list-item>
+      <md-list-item ng-href="/logout">
+        <md-icon class="md-material-icon avatar-profile-icon">exit_to_app</md-icon>
+        <span class="avatar-profile-text">Logout</span>
+        <span flex></span>
+      </md-list-item>
+    </md-list>
+
+    <md-list-item ng-href="/">
+      <md-icon class="md-material-icon navbar-icon">home</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Dashboard</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-href="/lobby">
+      <md-icon class="md-material-icon navbar-icon">format_list_bulleted</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Lobby</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">filter_none</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Decks</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">videogame_asset</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Games</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="main.showFriendsDialog($event)">
+      <md-icon class="md-material-icon navbar-icon">person</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Friends</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+    <md-list-item ng-click="null">
+      <md-icon class="md-material-icon navbar-icon">sms</md-icon>
+      <span class="navbar-text" ng-show="sidenav.service.isOpen()">Messages</span>
+      <span flex></span>
+      <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
+    </md-list-item>
+  </md-list>
+</md-sidenav>

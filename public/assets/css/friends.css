@@ -1,6 +1,8 @@
+/*** Friends ***/
+
 /*Friends Dialog*/
   .friends-dialog {
-    width: 400px;
+    width: 600px;
     min-height: 160px !important;
     background-color: var(--grey-50);
   }
@@ -49,19 +51,72 @@
 
 /*Add Friend Dialog*/
   .addfriend-dialog {
-    width: 400px;
+    width: 600px;
     min-height: 160px !important;
     background-color: var(--grey-50);
   }
 
   .addfriend-search {
-    margin: 8px !important;
   }
 
   .addfriend-search .addfriend-search-container {
-    height: 0px !important;
   }
 
   .addfriend-search .md-icon-button {
-    margin-top: 8px !important;
+  }
+
+
+/*Create New Game Dialog*/
+  .cng-dialog {
+    overflow: hidden;
+    width: 600px;
+    min-height: 160px !important;
+    background-color: var(--grey-50);
+  }
+
+  .cng-dialog-title {
+    margin: 0px !important;
+  }
+
+  .cng-dialog-title-input {
+    margin: 0px !important;
+    margin-top: 16px !important;
+  }
+
+  .cng-dialog-password {
+    margin: 0px !important;
+  }
+
+  .cng-dialog-password-switch {
+    margin: 0px !important;
+  }
+
+  .cng-dialog-password-input {
+    margin: 0px !important;
+    margin-left: 16px !important;
+  }
+
+  .cng-dialog-settings-label {
+    background-color: var(--grey-100) !important;
+  }
+
+  .cng-dialog-settings {
+    background-color: var(--grey-100) !important;
+  }
+
+  .cng-dialog-settings-format-input {
+      margin: 0px !important;
+  }
+
+  .cng-dialog-settings-type {
+    background-color: var(--grey-100) !important;
+    margin-top: 16px !important;
+  }
+
+  .cng-dialog-settings-type-input {
+    margin-right: 8px !important;
+  }
+
+  .cng-dialog-settings-players-input {
+    margin-left: 8px !important;
   }

@@ -1,0 +1,16 @@
+<div layout="row" class="logo md-toolbar-tools" ng-class="sidenav.logoService.getClass()">
+  <label><md-icon class="md-material-icon toolbar-icon">polymer</md-icon></label>
+  <label class="logo-text" ng-show="sidenav.logoService.isOpen()">Sideboard</label>
+  <span flex></span>
+</div>
+<div layout="row" class="md-toolbar-tools" style="width: 96px !important;">
+  <md-button class="md-icon-button" aria-label="Menu" ng-click="sidenav.service.onToggle()">
+    <md-icon class="md-material-icon toolbar-icon">{{(sidenav.service.isOpen() ? 'arrow_back' : 'menu')}}</md-icon>
+    <md-tooltip md-direction="bottom" class="large">{{(sidenav.service.isOpen() ? 'Hide Menu' : 'Show Menu')}}</md-tooltip>
+  </md-button>
+
+  <md-button class="md-icon-button" aria-label="Fullscreen" ng-click="main.fullscreenService.toggleAll()">
+    <md-icon class="md-material-icon toolbar-icon">{{(main.fullscreenService.isEnabled() ? 'fullscreen_exit' : 'fullscreen')}}</md-icon>
+    <md-tooltip md-direction="bottom" class="large">{{(main.fullscreenService.isEnabled() ? 'Exit Fullscreen' : 'Fullscreen')}}</md-tooltip>
+  </md-button>
+</div>

@@ -1,11 +1,12 @@
 'use strict';
 
+var Mongoose = require("mongoose");
 var config = require("../config");
 var redis = require("redis").createClient;
 var adapter = require("socket.io-redis");
 
-// var Room = require("../models/room");
 var User = require("../models/user");
+var Game = require("../models/game");
 
 module.exports = function(app){
   var server = require("http").createServer(app);
@@ -24,226 +25,423 @@ module.exports = function(app){
     require("../session")(socket.request, {}, next);
   });
 
-  var sendLocalUserInfo = function(socket, userId){
-    User.findById(userId, function(err, user){
-      if(err) throw err;
+  // Return: UserId from a Socket
+  var getUserIdFromSocket = function(socket){
+    if(socket && socket.request && socket.request.session && socket.request.session.passport) return socket.request.session.passport.user;
+    return null;
+  };
 
-      var friends = [];
-      var pendingFriendRequests = [];
+  // Return: Filtered StatusId (invisible becomes offline)
+  var filterStatusId = function(statusId){
+    return (statusId == User.Status.Invisible ? User.Status.Offline : statusId);
+  };
 
-      var promises1 = user.friends.map(function(obj){
-        return new Promise(function(resolve, reject){
-          User.findById(obj._id, function(err2, friend){
-            if(err2) throw err2;
+  // Return: Promise(An array of all open sockets)
+  var getOpenSockets = function(){
+    var sockets = [];
 
-            var statusId = 0;
-            Object.keys(io.sockets.sockets).forEach(function(clientSocketId){
-              var clientSocket = io.sockets.sockets[clientSocketId];
-              if(clientSocket.request.session.passport){
-                var clientUserId = clientSocket.request.session.passport.user;
+    return Promise.all(Object.keys(io.sockets.sockets).map(function(socketId){
+      sockets.push(io.sockets.sockets[socketId]);
+    })).then(function(){
+      return Promise.resolve(sockets);
+    });
+  };
 
-                if(friend._id == clientUserId){
-                  statusId = (friend.statusId < 4 ? friend.statusId : 0);
-                }
-              }
-            });
-            friends.push({username: friend.username, statusId: statusId});
-
-            resolve();
-          });
-        });
-      });
-
-      var promises2 = user.pendingFriendRequests.map(function(obj){
-        return new Promise(function(resolve, reject){
-          User.findById(obj._id, function(err2, friend){
-            if(err2) throw err2;
-
-            pendingFriendRequests.push({username: friend.username});
-
-            resolve();
-          });
-        });
-      });
-
-      Promise.all(promises1).then(function(){
-        Promise.all(promises2).then(function(){
-          socket.emit("me:user:init", {username: user.username, statusId: user.statusId, friends: friends, pendingFriendRequests: pendingFriendRequests});
-        });
+  // Return: Promise(Socket from a UserId)
+  var getSocketFromUserId = function(userId){
+    return getOpenSockets().then(function(sockets){
+      return Promise.all(sockets.map(function(socket){
+        var uid = getUserIdFromSocket(socket);
+        if(uid != null && ((uid).toString() == (userId).toString())) return Promise.reject(socket);
+      })).then(function(){
+        return Promise.resolve(null);
+      }).catch(function(socket){
+        return Promise.resolve(socket);
       });
     });
   };
 
-  var sendGlobalUserInfo = function(userId){
-    Object.keys(io.sockets.sockets).forEach(function(clientSocketId){
-      var clientSocket = io.sockets.sockets[clientSocketId];
-      if(clientSocket.request.session.passport){
-        var clientUserId = clientSocket.request.session.passport.user;
-        if(clientUserId == userId){
-          sendLocalUserInfo(clientSocket, clientUserId);
-        }
-      }
+  // Return: Promise(StatusId of UserId)
+  var getStatusIdFromUserId = function(userId){
+    return getSocketFromUserId(userId).then(function(socket){
+      if(socket == null) return Promise.resolve(User.Status.Offline);
+      return User.findById(userId).exec()
+        .then(function(user){
+          return user.statusId;
+        });
     });
+  };
+
+  // Send Socket's User Info to Socket
+  // Return: Promise(reject/resolve of success)
+  var sendUserInfo = function(socket){
+    var data = {
+      username: "",
+      statusId: User.Status.Offline,
+      friends: [],
+      pendingFriendRequests: []
+    };
+
+    var userId = getUserIdFromSocket(socket);
+    if(userId == null) return Promise.reject("Cannot get UserId");
+    return User.findById(userId).exec()
+      .then(function(user){
+        data.username = user.username;
+        data.statusId = user.statusId;
+
+        return Promise.all(user.friends.map(function(friend){
+          return User.findById(friend._id).exec()
+            .then(function(friendUser){
+              return getStatusIdFromUserId(friend._id)
+                .then(function(friendStatusId){
+                  data.friends.push({
+                    username: friendUser.username,
+                    statusId: filterStatusId(friendStatusId)
+                  });
+                });
+            });
+          })).then(function(){
+            return Promise.all(user.pendingFriendRequests.map(function(pendingFriendRequest){
+              return User.findById(pendingFriendRequest._id).exec()
+                .then(function(pendingFriendRequestUser){
+                  data.pendingFriendRequests.push({
+                    username: pendingFriendRequestUser.username
+                  });
+                });
+            }));
+          });
+      }).then(function(){
+        socket.emit("user.info.me", data);
+      });
+  };
+
+  var broadcastUserStatus = function(socket){
+    var userId = getUserIdFromSocket(socket);
+    if(userId == null) return Promise.reject("Cannot get UserId");
+    return getStatusIdFromUserId(userId).then(function(statusId){
+        return User.findById(userId).exec()
+          .then(function(user){
+            return Promise.all(user.friends.map(function(friend){
+              return getSocketFromUserId(friend._id).then(function(friendSocket){
+                if(friendSocket != null) friendSocket.emit("user.status", {username: user.username, statusId: filterStatusId(statusId)});
+              });
+            }))
+          });
+      });
   };
 
   io.on("connection", function(socket){
-    if(socket.request.session.passport){
-      var userId = socket.request.session.passport.user;
+    // If the socket is a logged-in user
+    if(getUserIdFromSocket(socket) != null){
 
-      // Send User Initial Info
-      sendLocalUserInfo(socket, userId);
-
-      // Broadcast User Status
-      User.findById(userId, function(err, user){
-        if(err) throw err;
-
-        Object.keys(io.sockets.sockets).forEach(function(clientSocketId){
-          var clientSocket = io.sockets.sockets[clientSocketId];
-          //var clientUserId = clientSocket.request.session.passport.user;
-
-          clientSocket.emit("all:status:update", {username: user.username, statusId: (user.statusId < 4 ? user.statusId : 0)});
-        });
-      });
+      // Send the User their information
+      sendUserInfo(socket).catch(err => {throw err});
+      // Broadcast the User's status (now that they're online)
+      broadcastUserStatus(socket).catch(err => {throw err});
 
       // User Sets their Status
-      socket.on("me:status:set", function(res){
-        User.setStatusId({_id: userId}, res.statusId, function(err, callback){
-          if(err) throw err;
-
-          User.findById(userId, function(err2, user){
-            if(err2) throw err2;
-            socket.emit("me:status:update", {statusId: user.statusId});
-
-            Object.keys(io.sockets.sockets).forEach(function(clientSocketId){
-              var clientSocket = io.sockets.sockets[clientSocketId];
-              var clientUserId = clientSocket.request.session.passport.user;
-
-              clientSocket.emit("all:status:update", {username: user.username, statusId: (user.statusId < 4 ? user.statusId : 0)});
-            });
-          });
-        });
-      });
-
-      // User Searches for Users
-      socket.on("me:user:search", function(res){
-        User.findById(userId, function(err, user){
-          if(err) throw err;
-
-          var users = [];
-          User.findAll({username: {$regex: res.username, $options: "i"}}, function(err2, searchUsers){
-            searchUsers.forEach(function(searchUser){
-              if(searchUser.username != user.username){
-                users.push({username: searchUser.username});
-              }
-            });
-
-            socket.emit("me:user:searchResults", {users: users});
-          });
-        });
+      socket.on("user.status.set", function(data){
+        // Clean the data
+        var newStatusId = (data.statusId > User.Status.Offline && data.statusId <= User.Status.Invisible ? data.statusId : User.Status.Online);
+        // Update the user statusId
+        User.findOneAndUpdate({_id: getUserIdFromSocket(socket)}, {$set: {statusId: newStatusId}}).exec()
+          .then(function(){
+            // Send the User their information
+            return sendUserInfo(socket).then(function(){
+                // Broadcast their new status
+                return broadcastUserStatus(socket);
+              });
+          }).catch(err => {throw err});
       });
 
       // User Removes friend
-      socket.on("me:friend:remove", function(res){
-        User.findById(userId, function(err, user){
-          if(err) throw err;
-          User.findOne({username: res.username}, function(err2, friend){
-            if(err2) throw err2;
-            for(var i=0; i<user.friends.length; i++){
-              if((user.friends[i]._id).toString() == (friend._id).toString()){
-                User.update({_id: userId}, {$pull: {friends: {_id: friend._id}}}, function(err3, callback){
-                  if(err3) throw err3;
-                  // Send User Updated Friends list
-                  sendLocalUserInfo(socket, user._id);
+      socket.on("user.friends.remove", function(data){
+        // Remove the user from the friend's friends
+        User.findOneAndUpdate({username: data.username}, {$pull: {friends: {_id: getUserIdFromSocket(socket)}}}).exec()
+          .then(function(friendUser){
+            // Update the user friends
+            return User.findOneAndUpdate({_id: getUserIdFromSocket(socket)}, {$pull: {friends: {_id: friendUser._id}}}).exec()
+              .then(function(){
+                // Send the User their information
+                return sendUserInfo(socket).then(function(){
+                  // Send the friend their information if they have a socket open
+                  return getSocketFromUserId(friendUser._id).then(function(friendSocket){
+                    if(friendSocket != null) return sendUserInfo(friendSocket);
+                  });
                 });
-                User.update({_id: friend._id}, {$pull: {friends: {_id: user._id}}}, function(err3, callback){
-                  if(err3) throw err3;
-                  // Send Friend Updated Friends List IF they're online
-                  sendGlobalUserInfo(friend._id);
-                });
-                break;
-              }
-            }
-          });
-        });
+              });
+          }).catch(err => {throw err});
       });
 
       // User Sends Friend Request to User
-      socket.on("me:friend:request:send", function(res){
-        User.findById(userId, function(err, user){
-          if(err) throw err;
-          User.findOne({username: res.username}, function(err2, friend){
-            if(err2) throw err2;
-
-            var sendRequest = true;
-            friend.pendingFriendRequests.forEach(function(request){
-              if(request._id.toString() == user._id.toString()){
-                sendRequest = false;
-              }
-            });
-
-            if(sendRequest){
-              User.update({username: friend.username}, {$push: {pendingFriendRequests: {_id: user._id}}}, function(err3, callback){
-                if(err3) throw err3;
-
-                // Send Friend Updated Pending Friend Requests if they're online
-                sendGlobalUserInfo(friend._id);
-              });
-            }
-          });
-        });
+      socket.on("user.friends.request.send", function(data){
+        // Check if the potential friend already has the user as a friend
+        User.findOne({username: data.username}).exec()
+          .then(function(friendUser){
+            return Promise.all(friendUser.friends.map(function(friend){
+              // If the potential friend DOES have the user as a friend
+              if((friend._id).toString() == getUserIdFromSocket(socket).toString()) return Promise.reject();
+            })).then(function(){
+              // If the potential friend DOES NOT have the user as a friend
+              // Check if the potential friend already has a friend request from the user
+              return Promise.all(friendUser.pendingFriendRequests.map(function(pendingFriendRequest){
+                  // If the potential friend DOES have a friend request from the user
+                  if((pendingFriendRequest._id).toString() == getUserIdFromSocket(socket).toString()) return Promise.reject();
+                })).then(function(){
+                  // If the potential friend DOES NOT have a friend request from the user
+                  // Update the potential friend's pendingFriendRequests
+                  return User.findOneAndUpdate({username: data.username}, {$push: {pendingFriendRequests: {_id: getUserIdFromSocket(socket)}}}).exec()
+                    .then(function(){
+                      // Send the potential friend their information if they have a socket open
+                      return getSocketFromUserId(friendUser._id).then(function(friendUserSocket){
+                        if(friendUserSocket != null) return sendUserInfo(friendUserSocket);
+                      });
+                    });
+                }).catch(reject => {return Promise.resolve()});
+            }).catch(reject => {return Promise.resolve()});
+          }).catch(err => {throw err});
       });
 
       // User Confirms/Denies Friend Request
-      socket.on("me:friend:request:response", function(res){
-        User.findById(userId, function(err, user){
-          if(err) throw err;
-          User.findOne({username: res.username}, function(err2, friend){
-            if(err2) throw err2;
-            user.pendingFriendRequests.forEach(function(request){
-              if(request._id.toString() == friend._id.toString()){
-                // Remove request
-                User.update({username: user.username}, {$pull: {pendingFriendRequests: {_id: friend._id}}}, function(err3, callback){
-                  if(err3) throw err3;
-
-                  // Send User Updated Pending Friend Requests
-                  sendLocalUserInfo(socket, userId);
-                });
-
-                if(res.confirm){
-                  // Add Friend to User
-                  User.update({username: user.username}, {$push: {friends: {_id: friend._id}}}, function(err3, callback){
-                    if(err3) throw err3;
-
-                    // Send User Updated Friend List
-                    sendLocalUserInfo(socket, userId);
-                  });
-
-                  // Add User to Friend
-                  User.update({username: friend.username}, {$push: {friends: {_id: user._id}}}, function(err3, callback){
-                    if(err3) throw err3;
-
-                    // Send Friend Updated Friend List if Friend is online
-                    sendGlobalUserInfo(friend._id);
-                  });
+      socket.on("user.friends.request.response", function(data){
+        // Find the friend user to be confirmed/denied
+        User.findOne({username: data.username}).exec()
+          .then(function(friendUser){
+            // Remove the friend the users pendingFriendRequests
+            return User.findOneAndUpdate({_id: getUserIdFromSocket(socket)}, {$pull: {pendingFriendRequests: {_id: friendUser._id}}}).exec()
+              .then(function(){
+                if(data.confirm){
+                  // If the user confirms the friend request
+                  // Add the friend to the user's friends
+                  return User.findOneAndUpdate({_id: getUserIdFromSocket(socket)}, {$push: {friends: {_id: friendUser._id}}}).exec()
+                    .then(function(){
+                      // Add the user to the friend's friends
+                      return User.findOneAndUpdate({_id: friendUser._id}, {$push: {friends: {_id: getUserIdFromSocket(socket)}}}).exec()
+                        .then(function(){
+                          // Send the friend their information if they have a socket open
+                          return getSocketFromUserId(friendUser._id).then(function(friendUserSocket){
+                            if(friendUserSocket != null) return sendUserInfo(friendUserSocket);
+                          });
+                        });
+                    });
                 }
-              }
+              }).then(function(){
+                // Send the user their information
+                return sendUserInfo(socket);
+              });
+        }).catch(err => {throw err});
+      });
+
+      // User Searches for Users
+      socket.on("user.search", function(data){
+        User.find({username: {$regex: data.username}}).exec()
+          .then(function(searchUsers){
+            var returnUsers = [];
+            return Promise.all(searchUsers.map(function(searchUser){
+              if((searchUser._id).toString() != getUserIdFromSocket(socket).toString()) returnUsers.push({username: searchUser.username});
+            })).then(function(){
+              socket.emit("user.search.results", returnUsers);
             });
-          });
-        });
+          }).catch(err => {throw err});
       });
 
       // User Disconnects
       socket.on("disconnect", function(){
-        User.findById(userId, function(err, user){
-          if(err) throw err;
+        // Broadcast
+        broadcastUserStatus(socket).catch(err => {throw err});
+      });
+    }
+  });
 
-          Object.keys(io.sockets.sockets).forEach(function(clientSocketId){
-            var clientSocket = io.sockets.sockets[clientSocketId];
-            // var clientUserId = clientSocket.request.session.passport.user;
+  // Return: Promise(Array of all open sockets in namespace)
+  var getOpenSocketsInNamespace = function(namespace){
+    var sockets = [];
+    return Promise.all(Object.keys(io.nsps[namespace].sockets).map(function(socketId){
+      sockets.push(io.nsps[namespace].sockets[socketId]);
+    })).then(function(){
+      return Promise.resolve(sockets);
+    });
+  };
 
-            clientSocket.emit("all:status:update", {username: user.username, statusId: 0});
+  // Return: Promise(Array of  of UserId in namespace)
+  var getArrayOfUserIdInNamespace = function(namespace){
+    var userIds = [];
+    return getOpenSocketsInNamespace(namespace).then(function(sockets){
+      return Promise.all(sockets.map(function(socket){
+        var uid = getUserIdFromSocket(socket);
+        if(uid != null) userIds.push(uid);
+      })).then(function(){
+        return Promise.resolve(userIds);
+      });
+    });
+  };
+
+  // Send the namespace the user list
+  // Return: Promise(reject/resolve of success)
+  var sendNamespaceUserList = function(namespace, broadcast){
+    var users = [];
+    return getArrayOfUserIdInNamespace(namespace).then(function(userIds){
+      return Promise.all(userIds.map(function(userId){
+        return User.findById(userId).exec()
+          .then(function(user){
+            return getStatusIdFromUserId(userId).then(function(statusId){
+              users.push({username: user.username, statusId: filterStatusId(statusId)});
+            });
+          });
+      })).then(function(){
+        io.of(namespace).emit(broadcast, users);
+      });
+    });
+  };
+
+  // Send the user the games list
+  // Return: Promise(reject/resolve of success)
+  var sendUserGameList = function(socket){
+    var data = [];
+    return Game.find({}).exec()
+        .then(function(games){
+          return Promise.all(games.map(function(game){
+            data.push({
+              id: game._id,
+              title: game.title,
+              isLocked: game.isLocked,
+              config: {
+                typeId: game.config.typeId,
+                typeCount: game.config.typeCount,
+                formatId: game.config.formatId
+              },
+              game: {
+                isRunning: game.game.isRunning
+              }
+            });
+          }))
+          .then(function(){
+            socket.emit("lobby.games", data);
           });
         });
+  };
+
+  io.of("/lobby").on("connection", function(socket){
+    // If the socket is a logged-in user
+    if(getUserIdFromSocket(socket) != null){
+      var _userId = getUserIdFromSocket(socket);
+
+      // Send the lobby the user list (now that user has joined)
+      sendNamespaceUserList("/lobby", "lobby.chat.users").catch(err => {throw err});
+
+      // Send the user the list of games
+      sendUserGameList(socket).catch(err => {throw err});
+
+      // User sends a message to the lobby
+      socket.on("lobby.chat.sendMessage", function(data){
+        if(data.text != null && !( /^[\s]*$/.test(data.text) )){
+          User.findById(getUserIdFromSocket(socket)).exec()
+            .then(function(user){
+              io.of("/lobby").emit("lobby.chat.message", {username: user.username, text: data.text});
+            }).catch(err => {throw err});
+        }
+      });
+
+      // User asks for list of games
+      socket.on("lobby.games.update", function(data){
+        sendUserGameList(socket).catch(err => {throw err});
+      });
+
+      socket.on("disconnect", function(){
+        // Send the lobby the user list (now that user has left)
+        sendNamespaceUserList("/lobby", "lobby.chat.users").catch(err => {throw err});
+      });
+    }
+  });
+
+  var findInArray = function(array, item){
+    return new Promise((resolve, reject) => {
+      Promise.all(array.map(function(i){
+        if(i._id.toString() == item.toString()) resolve();
+      })).then(function(){
+        reject();
+      });
+    });
+  };
+
+  var getOpenSocketsInRoomNamespace = function(room, namespace){
+    var sockets = [];
+    if(io.nsps[namespace] && io.nsps[namespace].adapter && io.nsps[namespace].adapter.rooms[room]){
+      return Promise.all(Object.keys(io.nsps[namespace].adapter.rooms[room].sockets).map(function(socketId){
+        sockets.push(io.sockets.sockets[socketId.replace(namespace+"#","")]);
+      })).then(function(){
+        return Promise.resolve(sockets);
+      });
+    }
+    return Promise.reject();
+  };
+
+  var getArrayOfUserIdInRoomNamespace = function(room, namespace){
+    var userIds = [];
+    return getOpenSocketsInRoomNamespace(room, namespace).then(function(sockets){
+      return Promise.all(sockets.map(function(socket){
+        var uid = getUserIdFromSocket(socket);
+        if(uid != null) userIds.push(uid);
+      })).then(function(){
+        return Promise.resolve(userIds);
+      });
+    });
+  };
+
+  var sendRoomConnectedList = function(room, namespace, broadcast){
+    var users = [];
+    return getArrayOfUserIdInRoomNamespace(room, namespace).then(function(userIds){
+      return Promise.all(userIds.map(function(userId){
+        return User.findById(userId).exec()
+          .then(function(user){
+            return getStatusIdFromUserId(userId).then(function(statusId){
+              users.push({username: user.username, statusId: filterStatusId(statusId)});
+            });
+          });
+      })).then(function(){
+        io.of(namespace).to(room).emit(broadcast, users);
+      });
+    });
+  };
+
+  var sendUserGameInfo = function(socket, gameId){
+    return Game.findById(Mongoose.Types.ObjectId(gameId)).exec()
+      .then(function(game){
+        socket.emit("game.info", game);
+      });
+  };
+
+  io.of("/game").on("connection", function(socket){
+    // If the socket is a logged-in user AND a gameid is sent
+    if(getUserIdFromSocket(socket) != null && socket.handshake.query["gid"] != null && Mongoose.Types.ObjectId.isValid(socket.handshake.query["gid"])){
+      var _userId = getUserIdFromSocket(socket);
+      var _gameId = socket.handshake.query["gid"];
+      var _room = "game_" + _gameId;
+
+      socket.join(_room);
+
+      // Send User Game Info
+      sendUserGameInfo(socket, _gameId).catch(err => {throw err});
+
+      // Send Everyone the list of users connected to the game
+      sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {throw err});
+
+      // User sends a message to the game
+      socket.on("game.chat.sendMessage", function(data){
+        if(data.text != null && !( /^[\s]*$/.test(data.text) )){
+          User.findById(getUserIdFromSocket(socket)).exec()
+            .then(function(user){
+              io.of("/game").to(_room).emit("game.chat.message", {username: user.username, text: data.text});
+            }).catch(err => {throw err});
+        }
+      });
+
+      socket.on("disconnect", function(){
+        // User disconnects from game room
+        socket.leave(_room);
+
+        // Send Everyone the list of users connected to the game
+        sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {console.error("Error: No users in room to broadcast.")});
       });
     }
   });

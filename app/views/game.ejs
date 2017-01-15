@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include("partials/head") %>
+  <link rel="stylesheet" href="./assets/css/game.css" />
+</head>
+
+<body ng-app="App" ng-controller="MainController as main" layout="column">
+  <section ng-controller="SidenavController as sidenav" layout="column" flex>
+    <section ng-controller="GameController as game" layout="column" flex>
+      <md-toolbar layout="row" theme="toolbar" class="toolbar" md-whiteframe="1">
+        <%- include("partials/toolbar") %>
+
+        <div class="md-toolbar-tools" flex>
+          <h2>{{game.configService.getGameConfig().title}}</h2>
+          <span flex></span>
+        </div>
+        <div class="md-toolbar-tools game-toolbar" ng-class="game.toolbarService.getClass()">
+          <md-button class="md-icon-button" aria-label="Game Chat" ng-click="game.sidebarService.onToggle()">
+            <md-icon class="md-material-icon toolbar-icon">{{(game.sidebarService.isOpen() ? 'subdirectory_arrow_right' : 'subdirectory_arrow_left')}}</md-icon>
+            <md-tooltip md-direction="bottom" class="large">{{(game.sidebarService.isOpen() ? 'Hide Game Chat' : 'Show Game Chat')}}</md-tooltip>
+          </md-button>
+          <label class="game-toolbar-label" ng-show="game.sidebarService.isOpen()">Game Chat</label>
+        </div>
+      </md-toolbar>
+
+      <section layout="row" flex>
+        <%- include("partials/sidenav") %>
+
+        <md-content layout="row" flex>
+          <md-content layout="column" flex>
+            Stuff
+          </md-content>
+
+          <md-content layout="column" class="game-sidebar" ng-class="game.sidebarService.getClass()" md-whiteframe="1">
+            <md-list class="game-users-list" flex>
+              <md-list-item ng-repeat="user in game.usersService.getUsers() | orderBy:['-statusId', 'username']">
+                <div class="game-users-list-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+                <div layout="column" class="game-users-list-avatar-text-div" flex>
+                  <label class="game-users-list-avatar-text-username" flex>{{user.username}}</label>
+                  <div class="game-users-list-avatar-text-status" layout="row" flex>
+                    <md-icon class="md-material-icon status-icon" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">lens</md-icon>
+                    <label class="status-icon-text" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">
+                      {{main.statusFactory.getStatusText(main.usersService.getUserByUsername(user.username).statusId)}}
+                    </label>
+                  </div>
+                </div>
+                <md-menu>
+                  <md-button class="md-icon-button" ng-click="main.openMenu($mdOpenMenu, $event)">
+                    <md-icon class="md-material-icon game-users-list-avatar-options">more_vert</md-icon>
+                  </md-button>
+                  <md-menu-content>
+                    <md-menu-item>
+                      <md-button ng-click="null">
+                        <md-icon class="md-material-icon game-users-list-avatar-options">add_circle</md-icon>
+                        Send Friend Request
+                      </md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
+              </md-list-item>
+            </md-list>
+            <md-content layout="column" class="game-chatbox" flex>
+              <md-list class="game-chatbox-display" flex>
+                <md-list-item ng-repeat="message in game.chatService.getMessages()">
+                  <p class="game-chatbox-display-p"><b>{{message.username}}:</b> {{message.text}}</p>
+                </md-list-item>
+              </md-list>
+              <md-content layout="row" class="game-chatbox-input">
+                <md-input-container class="game-chatbox-input-container" flex>
+                  <label><i>Chat Message</i></label>
+                  <textarea class="game-chatbox-input-textarea" ng-model="game.chatService.messageText" name="search" type="text" ng-enter="game.socketService.onSendGameChatMessage(game.chatService.messageText)"></textarea>
+                </md-input-container>
+                <md-button class="md-raised md-primary" ng-click="game.socketService.onSendGameChatMessage(game.chatService.messageText)">
+                  Send
+                </md-button>
+              </md-content>
+            </md-content>
+          </md-content>
+        </md-content>
+      </section>
+
+      <%- include("partials/scripts") %>
+      <script src="./app/components/game/game.controller.js"></script>
+      <script src="./app/components/game/game.service.js"></script>
+    </section>
+  </section>
+</body>
+
+</html>

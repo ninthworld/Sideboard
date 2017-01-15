@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="../assets/css/friends.css" />
+<md-dialog class="friends-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">person</md-icon>
+    <h2 style="padding-left: 12px;">Friends</h2>
+    <span flex></span>
+    <md-button aria-label="Add Friend" ng-click="main.showAddFriendDialog($event)">
+      <md-icon class="md-material-icon toolbar-icon">add_circle</md-icon>
+      Add Friend
+    </md-button>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <md-list class="friends-list">
+    <md-list-item ng-repeat="friend in main.userService.getFriends() | orderBy:['-statusId', 'username']">
+      <div class="friends-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+      <div layout="column" class="friends-avatar-text-div" flex>
+        <label class="friends-avatar-text-username" flex>{{friend.username}}</label>
+        <div class="friends-avatar-text-status" layout="row" flex>
+          <md-icon class="md-material-icon status-icon" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(friend.username).statusId)">lens</md-icon>
+          <label class="status-icon-text" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(friend.username).statusId)">
+            {{main.statusFactory.getStatusText(main.usersService.getUserByUsername(friend.username).statusId)}}
+          </label>
+        </div>
+      </div>
+      <md-menu>
+        <md-button class="md-icon-button" ng-click="main.openMenu($mdOpenMenu, $event)">
+          <md-icon class="md-material-icon friends-avatar-options">more_vert</md-icon>
+        </md-button>
+        <md-menu-content>
+          <md-menu-item>
+            <md-button class="status-icon-busy" ng-click="main.showRemoveFriendConfirmDialog($event, friend.username)">
+              <md-icon class="md-material-icon friends-avatar-options status-icon-busy">remove_circle_outline</md-icon>
+              Remove Friend
+            </md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+    </md-list-item>
+  </md-list>
+  <md-list class="friends-list">
+    <md-list-item ng-repeat="friend in main.userService.getPendingFriendRequests() | orderBy:['username']">
+      <div class="friends-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+      <div layout="column" class="friends-avatar-text-div" flex>
+        <label class="friends-avatar-text-username" flex>{{friend.username}}</label>
+      </div>
+      <md-button ng-click="main.socketService.onPendingFriendResponse(true, friend.username)">
+        <md-icon class="md-material-icon friends-avatar-options status-icon-online">check</md-icon>
+        Accept
+      </md-button>
+      <md-button ng-click="main.socketService.onPendingFriendResponse(false, friend.username)">
+        <md-icon class="md-material-icon friends-avatar-options status-icon-busy">close</md-icon>
+        Decline
+      </md-button>
+    </md-list-item>
+  </md-list>
+</md-dialog>

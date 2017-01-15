@@ -1,0 +1,131 @@
+/*** Game ***/
+
+/* Game Sidebar */
+  .game-sidebar {
+    background-color: var(--grey-100);
+    color: var(--grey-900);
+    padding: 0px !important;
+
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .game-sidebar-closed {
+    min-width: 0px !important;
+    width: 0px !important;
+    opacity: 0;
+  }
+
+  .game-sidebar-opened {
+    width: 380px;
+    opacity: 1;
+  }
+
+  .game-toolbar {
+    background-color: var(--blue-700);
+    padding: 15px !important;
+
+    transition: all 0.5s ease-in-out;
+  }
+
+  .game-toolbar-label {
+    white-space: nowrap;
+  }
+
+  .game-toolbar-closed {
+    width: 58px;
+  }
+
+  .game-toolbar-opened {
+    width: 380px;
+  }
+
+/*Lobby Chat List*/
+  .game-users-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .game-users-list md-list-item {
+    padding: 4px;
+    margin-bottom: 6px;
+    background-color: var(--grey-200);
+  }
+
+  .game-users-list md-list-item:hover {
+    background-color: var(--grey-300);
+  }
+
+  .game-users-list-avatar-img {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    margin: 5px !important;
+    background-size: cover;
+    border-radius: 24px;
+  }
+
+  .game-users-list-avatar-text-div {
+    color: var(--grey-900);
+    margin-left: 4px;
+    padding: 6px;
+  }
+
+  .game-users-list-avatar-text-username {
+    font-size: 18px;
+  }
+
+  .game-users-list-avatar-text-status {
+    font-size: 14px;
+  }
+
+  .game-users-list-avatar-options {
+    font-size: 24px !important;
+    color: var(--grey-900);
+  }
+
+/*Lobby Chat Chatbox*/
+  .game-chatbox {
+    background-color: var(--grey-100);
+    color: var(--grey-900);
+    margin-top: 8px !important;
+  }
+
+  .game-chatbox-display {
+    background-color: var(--grey-100);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+  }
+
+  .game-chatbox-display-p {
+    max-width: 340px !important;
+    word-wrap: break-word !important;
+  }
+
+  .game-chatbox-display md-list-item {
+    margin-bottom: 8px !important;
+    padding: 8px !important;
+    color: var(--grey-900) !important;
+    font-size: 14px !important;
+    line-height: 24px !important;
+  }
+
+  .game-chatbox-display md-list-item:nth-child(odd) {
+    background-color: var(--grey-200);
+  }
+
+  .game-chatbox-input {
+    background-color: var(--grey-300);
+
+  }
+
+  .game-chatbox-input-container {
+    padding: 0px !important;
+    margin: 20px 0px 0px 8px !important;
+  }
+
+  .game-chatbox-input-textarea {
+    background-color: var(--grey-300);
+    margin-top: 16px !important;
+  }

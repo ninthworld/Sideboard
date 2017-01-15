@@ -1,0 +1,64 @@
+<link rel="stylesheet" href="../assets/css/createNewGameDialog.css" />
+<md-dialog class="cng-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">videogame_asset</md-icon>
+    <h2 style="padding-left: 12px;">Create New Game</h2>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <md-content layout="row" flex>
+    <form action="/creategame" method="post" layout="column" flex>
+      <md-content layout="row" class="cng-dialog-title md-padding">
+        <md-input-container class="cng-dialog-title-input" flex>
+          <label>Title</label>
+          <input ng-model="title" name="title" value="" type="text">
+        </md-input-container>
+      </md-content>
+
+      <md-content layout="row" class="cng-dialog-password md-padding">
+        <md-switch ng-model="isLocked" class="md-primary cng-dialog-password-switch">
+          <md-icon class="md-material-icon">{{(isLocked ? 'lock' : 'lock_open')}}</md-icon>
+          <md-tooltip md-direction="top" class="large">{{(isLocked ? 'Locked' : 'Unlocked')}}</md-tooltip>
+        </md-switch>
+        <input type="hidden" name="isLocked" ng-value="isLocked">
+        <md-input-container class="cng-dialog-password-input" flex>
+          <label>{{(isLocked ? 'Password' : 'Password (Disabled)')}}</label>
+          <input ng-model="password" name="password" type="text" value="" ng-disabled="!isLocked">
+        </md-input-container>
+      </md-content>
+      <md-content layout="column" class="cng-dialog-settings md-padding">
+        <label class="fancy-label">Settings</label>
+        <md-input-container class="cng-dialog-settings-format-input" flex>
+          <label>Format</label>
+          <md-select ng-model="formatId" name="formatId">
+            <md-option ng-repeat="item in main.gameFormatFactory.getFormats()" value="{{main.gameFormatFactory.getFormatId(item)}}">{{item}}</md-option>
+          </md-select>
+        </md-input-container>
+
+        <md-content layout="row" class="cng-dialog-settings-type">
+          <md-input-container class="cng-dialog-settings-type-input" flex>
+            <label>Type</label>
+            <md-select ng-model="typeId" name="typeId">
+              <md-option ng-repeat="item in main.gameTypeFactory.getTypes()" value="{{main.gameTypeFactory.getTypeId(item)}}">{{item}}</md-option>
+            </md-select>
+          </md-input-container>
+
+          <md-input-container class="cng-dialog-settings-players-input" flex>
+            <label>Players</label>
+            <md-select ng-model="typeCount" name="typeCount" ng-disabled="(typeId == null)">
+              <md-option ng-repeat="item in playerCounts[typeId]" value="{{item.value}}">{{item.name}}</md-option>
+            </md-select>
+          </md-input-container>
+        </md-content>
+      </md-content>
+      <md-content layout="column" class="cng-dialog-creategame">
+        <md-button class="md-raised md-primary" type="submit">
+          Create Game
+        </md-button>
+      </md-content>
+    </form>
+  </md-content>
+</md-dialog>

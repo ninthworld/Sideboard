@@ -44,10 +44,12 @@ router.get("/game", function(req, res, next){
   var addUserToGame = function(gameId, userId){
     return new Promise((resolve, reject) => Game.findOneAndUpdate({_id: gameId}, {$push: {users: {_id: userId}}}).exec()
       .then(function(){
-        res.render("game", {gameId: _gameId});
-        resolve();
-      })
-      .catch(function(err){
+        return User.findOneAndUpdate({_id: userId}, {$push: {games: {_id: gameId}}}).exec()
+          .then(function(){
+            res.render("game", {gameId: _gameId});
+            resolve();
+          });
+      }).catch(function(err){
         req.flash("error", "Could not add you to the game.");
         res.redirect("/");
         reject();
@@ -171,6 +173,9 @@ router.post("/register", function(req, res, next){
   }else if(credentials.password != credentials.password2){
     req.flash("error", "Passwords don't match");
     res.redirect("/register");
+  }else if(!(/^[0-9a-zA-Z]+$/.test(credentials.username)) || !(/^[0-9a-zA-Z]+$/.test(credentials.password))){
+    req.flash("error", "Invalid Username or Password");
+    res.redirect("/register");
   }else{
     User.find({"email": credentials.email}).exec()
       .then(function(users1){
@@ -229,7 +234,10 @@ router.post("/creategame", function(req, res, next){
 
     Game.create_CB(init, function(err, newGame){
       if(!err){
-        res.redirect("/game?gid=" + newGame._id);
+        User.findOneAndUpdate({_id: Mongoose.Types.ObjectId(req.session.passport.user)}, {$push: {games: {_id: newGame._id}}}).exec()
+          .then(function(){
+            res.redirect("/game?gid=" + newGame._id);
+          }).catch(err => {throw err});
       }else{
         res.flash("error", "Could not create new game.")
         res.redirect("/lobby");

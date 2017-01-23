@@ -1,0 +1,41 @@
+<link rel="stylesheet" href="../assets/css/dialog.css" />
+<md-dialog class="games-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">videogame_asset</md-icon>
+    <h2 style="padding-left: 12px;">Games</h2>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <md-content layout="row" flex>
+    <md-list class="games-dialog-list" flex>
+      <md-list-item layout="row" ng-repeat="game in main.userService.getGames() | orderBy:['isLocked', 'title', 'game.isRunning']">
+        <md-button class="md-icon-button">
+          <md-icon class="md-material-icon">{{(game.isLocked ? 'lock' : 'lock_open')}}</md-icon>
+          <md-tooltip md-direction="top" class="large">{{(game.isLocked ? 'Password Required' : 'Open')}}</md-tooltip>
+        </md-button>
+
+        <label class="fancy-label games-dialog-list-status" ng-class="(game.game.isRunning ? 'status-icon-online' : 'status-icon-away')">
+          {{(game.game.isRunning ? 'In Progress' : 'Waiting')}}
+        </label>
+
+        <label class="md-padding games-dialog-list-title">{{game.title}}</label>
+
+        <span flex></span>
+
+        <md-button class="md-raised" class="games-dialog-list-join" ng-click="main.onJoinGame($event, game.id, false)">
+          Join Game
+        </md-button>
+
+        <md-tooltip md-direction="top" class="large">
+          {{main.gameFormatFactory.getFormatText(game.config.formatId)}} / 
+          {{main.gameTypeFactory.getTypeText(game.config.typeId)}} /
+          {{main.gameTypeFactory.getPlayerCountText(game.config.typeCount, game.config.typeId)}}
+        </md-tooltip>
+      </md-list-item>
+    </md-list>
+
+  </md-content>
+</md-dialog>

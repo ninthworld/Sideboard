@@ -2,4 +2,4 @@
 
 var morgan = require("morgan");
 
-module.exports = morgan();
+module.exports = morgan("dev");

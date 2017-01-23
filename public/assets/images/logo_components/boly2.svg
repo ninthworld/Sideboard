@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px"
+	 height="48px" viewBox="0 0 48 48" enable-background="new 0 0 48 48" xml:space="preserve">
+<g id="Layer_2_1_" display="none">
+	<g id="Layer_1_2_" display="inline">
+		<path d="M8,10v8l25.26,15.791L24,39L8,30v8l16,9l16-9v-8L14.74,14.21L24,9l16,9v-8L24,1L8,10z"/>
+	</g>
+</g>
+<g id="Layer_3_1_" display="none">
+	<polygon display="inline" points="40,10 40,18 8,38 8,30 	"/>
+</g>
+<g id="Layer_1">
+	<g id="Layer_1_1_" display="none">
+		<path display="inline" d="M8,10v8l25.26,15.79L24,39L8,30v8l16,9l16-9v-8L14.74,14.21L24,9l16,9v-8L24,1L8,10z"/>
+	</g>
+	<g id="Layer_4" display="none">
+		<polygon display="inline" points="8,38 40,18 40,10 8,30 		"/>
+	</g>
+	<g id="Layer_2">
+		<polyline points="24,1 24,47 8,38 8,10 		"/>
+	</g>
+	<g id="Layer_3">
+		<polygon points="24,1 40,10 40,18 30.4,24 40,30 40,38 24,47 24,39 33.26,33.79 24,28.002 24,19.998 33.263,14.211 24,9 		"/>
+	</g>
+	<path d="M24,1"/>
+</g>
+</svg>

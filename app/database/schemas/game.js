@@ -11,7 +11,8 @@ var GameSchema = new Mongoose.Schema({
   password: { type: String, default: null },
   leaderId: { type: Mongoose.Schema.ObjectId, default: null },
   users: [{
-    _id: { type: Mongoose.Schema.ObjectId, default: null }
+    _id: { type: Mongoose.Schema.ObjectId, default: null },
+    isMuted: { type: Boolean, default: false }
   }],
   config: {
     typeId: { type: Number, default: 0 },     // (0) Teams, (1) FFA
@@ -24,6 +25,8 @@ var GameSchema = new Mongoose.Schema({
     playerIdTurn: { type: Mongoose.Schema.ObjectId, default: null },
     players: [{
       _id: { type: Mongoose.Schema.ObjectId, default: null },
+      teamId: { type: Number, default: 1 },
+      isReady: { type: Boolean, default: false },
       deckId: { type: Mongoose.Schema.ObjectId, default: null }
     }]
   }

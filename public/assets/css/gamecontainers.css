@@ -1,0 +1,9 @@
+/* Game Containers */
+.gc-label {
+    white-space: nowrap;
+    text-transform: uppercase;
+    font-style: inherit;
+    font-variant: inherit;
+    font-family: inherit;
+    color: white;
+}

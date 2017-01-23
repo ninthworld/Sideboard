@@ -52,7 +52,7 @@
     padding-left: 8px;
     border-radius: 2px;
   }
-
+  
   .lobby-list-chips {
     margin-top: 0px !important;
     padding-top: 0px !important;
@@ -74,10 +74,6 @@
 
   .lobby-list-card:hover {
     background-color: var(--grey-300);
-  }
-
-  .lobby-list-lock {
-
   }
 
   .lobby-list-status {
@@ -152,9 +148,14 @@
 
   .lobbychat-list md-list-item {
     padding: 4px;
-    margin-bottom: 6px;
+    /*margin-bottom: 6px;*/
+    /*background-color: var(--grey-200);*/
+  }
+
+  .lobbychat-list md-list-item:nth-child(even) {
     background-color: var(--grey-200);
   }
+
 
   .lobbychat-list md-list-item:hover {
     background-color: var(--grey-300);

@@ -9,10 +9,37 @@ App.controller("MainController", function(Fullscreen, UserService, UsersService,
   this.gameFormatFactory = GameFormatFactory;
   this.gameTypeFactory = GameTypeFactory;
 
+  this.showGamesDialog = function(ev){
+    $mdDialog.show({
+      controller: "GamesDialogController",
+      templateUrl: "./assets/html/main/games.dialog.html",
+      parent: angular.element(document.body),
+      targetEvent: ev,
+      clickOutsideToClose: true,
+      locals: {
+        $main: this
+      }
+    });
+  };
+
+  this.showProfileDialog = function(ev, username){
+    $mdDialog.show({
+      controller: "ProfileDialogController",
+      templateUrl: "./assets/html/main/profile.dialog.html",
+      parent: angular.element(document.body),
+      targetEvent: ev,
+      clickOutsideToClose: true,
+      locals: {
+        $main: this,
+        $username: username
+      }
+    });
+  };
+
   this.showFriendsDialog = function(ev){
     $mdDialog.show({
       controller: "FriendsDialogController",
-      templateUrl: "./assets/html/friends/friends.dialog.html",
+      templateUrl: "./assets/html/main/friends.dialog.html",
       parent: angular.element(document.body),
       targetEvent: ev,
       clickOutsideToClose: true,
@@ -25,7 +52,7 @@ App.controller("MainController", function(Fullscreen, UserService, UsersService,
   this.showAddFriendDialog = function(ev){
     $mdDialog.show({
       controller: "AddFriendDialogController",
-      templateUrl: "./assets/html/friends/addfriend.dialog.html",
+      templateUrl: "./assets/html/main/addfriend.dialog.html",
       parent: angular.element(document.body),
       targetEvent: ev,
       clickOutsideToClose: true,
@@ -97,6 +124,22 @@ App.controller("MainController", function(Fullscreen, UserService, UsersService,
   };
 });
 
+App.controller("GamesDialogController", function($scope, $mdDialog, $main){
+  $scope.main = $main;
+  
+  $scope.hide = function() {
+    $mdDialog.hide();
+  };
+
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+
+  $scope.answer = function(answer) {
+    $mdDialog.hide(answer);
+  };
+});
+
 App.controller("CreateGameDialogController", function($scope, $mdDialog, $main){
   $scope.main = $main;
   $scope.isLocked = false;
@@ -116,4 +159,11 @@ App.controller("CreateGameDialogController", function($scope, $mdDialog, $main){
   $scope.answer = function(answer) {
     $mdDialog.hide(answer);
   };
+});
+
+App.config(function($mdThemingProvider){
+  $mdThemingProvider.theme("white")
+    .primaryPalette("grey", {
+      "default": "50"
+    }).dark();
 });

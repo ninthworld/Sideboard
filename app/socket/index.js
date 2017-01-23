@@ -79,7 +79,9 @@ module.exports = function(app){
       username: "",
       statusId: User.Status.Offline,
       friends: [],
-      pendingFriendRequests: []
+      pendingFriendRequests: [],
+      games: [],
+      decks: []
     };
 
     var userId = getUserIdFromSocket(socket);
@@ -88,6 +90,7 @@ module.exports = function(app){
       .then(function(user){
         data.username = user.username;
         data.statusId = user.statusId;
+        data.avatar = user.avatar;
 
         return Promise.all(user.friends.map(function(friend){
           return User.findById(friend._id).exec()
@@ -96,6 +99,7 @@ module.exports = function(app){
                 .then(function(friendStatusId){
                   data.friends.push({
                     username: friendUser.username,
+                    avatar: friendUser.avatar,
                     statusId: filterStatusId(friendStatusId)
                   });
                 });
@@ -104,10 +108,44 @@ module.exports = function(app){
             return Promise.all(user.pendingFriendRequests.map(function(pendingFriendRequest){
               return User.findById(pendingFriendRequest._id).exec()
                 .then(function(pendingFriendRequestUser){
-                  data.pendingFriendRequests.push({
-                    username: pendingFriendRequestUser.username
+                  return getStatusIdFromUserId(pendingFriendRequest._id)
+                    .then(function(pendingFriendStatusId){
+                      data.pendingFriendRequests.push({
+                        username: pendingFriendRequestUser.username,
+                        avatar: pendingFriendRequestUser.avatar,
+                        statusId: filterStatusId(pendingFriendStatusId)
+                      });
+                    });
+                });
+            }));
+          }).then(function(){
+            return Promise.all(user.games.map(function(game){
+              return Game.findById(game._id).exec()
+                .then(function(gameGame){
+                  data.games.push({
+                    id: gameGame._id,
+                    title: gameGame.title,
+                    isLocked: gameGame.isLocked,
+                    config: {
+                      typeId: gameGame.config.typeId,
+                      typeCount: gameGame.config.typeCount,
+                      formatId: gameGame.config.formatId
+                    },
+                    game: {
+                      isRunning: gameGame.game.isRunning
+                    }
                   });
                 });
+            }));
+          }).then(function(){
+            return Promise.all(user.decks.map(function(deck){
+              // return Deck.findById(deck._id).exec()
+              //   .then(function(deckDeck){
+              //     data.decks.push({});
+              //   });
+              data.decks.push({
+                _id: deck._id
+              });
             }));
           });
       }).then(function(){
@@ -123,7 +161,7 @@ module.exports = function(app){
           .then(function(user){
             return Promise.all(user.friends.map(function(friend){
               return getSocketFromUserId(friend._id).then(function(friendSocket){
-                if(friendSocket != null) friendSocket.emit("user.status", {username: user.username, statusId: filterStatusId(statusId)});
+                if(friendSocket != null) friendSocket.emit("user.status", {username: user.username, avatar: user.avatar, statusId: filterStatusId(statusId)});
               });
             }))
           });
@@ -238,7 +276,16 @@ module.exports = function(app){
           .then(function(searchUsers){
             var returnUsers = [];
             return Promise.all(searchUsers.map(function(searchUser){
-              if((searchUser._id).toString() != getUserIdFromSocket(socket).toString()) returnUsers.push({username: searchUser.username});
+              if((searchUser._id).toString() != getUserIdFromSocket(socket).toString()){
+                return getStatusIdFromUserId(searchUser._id)
+                    .then(function(searchUserStatusId){
+                      returnUsers.push({
+                        username: searchUser.username,
+                        avatar: searchUser.avatar,
+                        statusId: filterStatusId(searchUserStatusId)
+                      });
+                    });
+              }
             })).then(function(){
               socket.emit("user.search.results", returnUsers);
             });
@@ -285,7 +332,7 @@ module.exports = function(app){
         return User.findById(userId).exec()
           .then(function(user){
             return getStatusIdFromUserId(userId).then(function(statusId){
-              users.push({username: user.username, statusId: filterStatusId(statusId)});
+              users.push({username: user.username, avatar: user.avatar, statusId: filterStatusId(statusId)});
             });
           });
       })).then(function(){
@@ -368,10 +415,10 @@ module.exports = function(app){
     var sockets = [];
     if(io.nsps[namespace] && io.nsps[namespace].adapter && io.nsps[namespace].adapter.rooms[room]){
       return Promise.all(Object.keys(io.nsps[namespace].adapter.rooms[room].sockets).map(function(socketId){
-        sockets.push(io.sockets.sockets[socketId.replace(namespace+"#","")]);
-      })).then(function(){
-        return Promise.resolve(sockets);
-      });
+          sockets.push(io.sockets.sockets[socketId.replace(namespace+"#","")]);
+        })).then(function(){
+          return Promise.resolve(sockets);
+        });
     }
     return Promise.reject();
   };
@@ -379,61 +426,406 @@ module.exports = function(app){
   var getArrayOfUserIdInRoomNamespace = function(room, namespace){
     var userIds = [];
     return getOpenSocketsInRoomNamespace(room, namespace).then(function(sockets){
-      return Promise.all(sockets.map(function(socket){
-        var uid = getUserIdFromSocket(socket);
-        if(uid != null) userIds.push(uid);
-      })).then(function(){
-        return Promise.resolve(userIds);
+        return Promise.all(sockets.map(function(socket){
+          var uid = getUserIdFromSocket(socket);
+          if(uid != null) userIds.push(uid);
+        })).then(function(){
+          return Promise.resolve(userIds);
+        });
       });
-    });
   };
 
-  var sendRoomConnectedList = function(room, namespace, broadcast){
+  var sendRoomConnectedList = function(room, namespace){
     var users = [];
     return getArrayOfUserIdInRoomNamespace(room, namespace).then(function(userIds){
       return Promise.all(userIds.map(function(userId){
-        return User.findById(userId).exec()
-          .then(function(user){
-            return getStatusIdFromUserId(userId).then(function(statusId){
-              users.push({username: user.username, statusId: filterStatusId(statusId)});
+          return User.findById(userId).exec()
+            .then(function(user){
+              return getStatusIdFromUserId(userId).then(function(statusId){
+                users.push({username: user.username, avatar: user.avatar, statusId: filterStatusId(statusId)});
+              });
             });
-          });
-      })).then(function(){
-        io.of(namespace).to(room).emit(broadcast, users);
+        })).then(function(){
+          io.of(namespace).to(room).emit("game.users.connected", users);
+        });
       });
-    });
   };
 
-  var sendUserGameInfo = function(socket, gameId){
+  var getGameInfo = function(gameId){
     return Game.findById(Mongoose.Types.ObjectId(gameId)).exec()
       .then(function(game){
-        socket.emit("game.info", game);
+        var data = {};
+        data.title = game.title;
+        data.isLocked = game.isLocked;
+        data.users = [];
+        data.game = {
+          isRunning: game.game.isRunning,
+          players: []
+        };
+        data.config = {
+          formatId: game.config.formatId,
+          typeId: game.config.typeId,
+          typeCount: game.config.typeCount
+        };
+
+        return User.findById(Mongoose.Types.ObjectId(game.leaderId)).exec()
+          .then(function(user){
+            data.leader = user.username;
+
+            return Promise.all(game.users.map(function(userData){
+                return User.findById(Mongoose.Types.ObjectId(userData._id)).exec()
+                  .then(function(user){
+                    return getStatusIdFromUserId(userData._id).then(function(statusId){
+                      data.users.push({username: user.username, avatar: user.avatar, statusId: filterStatusId(statusId), isMuted: userData.isMuted});
+                    });
+                  });
+              })).then(function(){
+                return Promise.all(game.game.players.map(function(playerData){
+                  return User.findById(Mongoose.Types.ObjectId(playerData._id)).exec()
+                    .then(function(user){
+                      data.game.players.push({username: user.username, teamId: playerData.teamId, isReady: playerData.isReady, deckId: playerData.deckId});
+                    });
+                }));
+              }).then(function(){
+                return Promise.resolve(data);
+              });
+          });
+      });
+  };
+
+  var sendRoomGameInfo = function(room, namespace, gameId){
+    return getGameInfo(gameId).then(function(data){
+        io.of(namespace).to(room).emit("game.info", data);
+      });
+  };
+
+  var removeUserFromGame = function(userId, gameId){
+    return Game.findOneAndUpdate({_id: gameId}, {$pull: {users: {_id: userId}}}).exec()
+      .then(function(game){
+        return Game.findOneAndUpdate({_id: gameId}, {$pull: {"game.players": {_id: userId}}}).exec()
+          .then(function(){
+            return Promise.resolve(game);
+          }).catch(function(){
+            return Promise.resolve(game);
+          });
+      }).then(function(game){
+        if((game.leaderId).toString() == userId.toString()){
+          return (new Promise((resolve, reject) => {
+            Promise.all(game.users.map(function(user){
+              if((user._id).toString() != userId.toString()) return resolve(user);
+            })).then(function(){
+              return reject();
+            });
+          })).then(function(user){
+            // Set user as leader
+            return Game.findOneAndUpdate({_id: gameId}, {leaderId: user._id}).exec()
+          }).catch(function(){
+            // No more users in the game, remove the game entirely
+            return Game.findById(gameId).remove().exec();
+          });
+        }
+      }).then(function(){
+        // Remove Game from user's data
+        console.log("Going to remove game from user");
+        return new Promise((resolve, reject) => 
+          User.findOneAndUpdate({_id: userId}, {$pull: {games: {_id: gameId}}}).exec()
+            .then(function(){
+              resolve(); 
+            }).catch(function(){
+              resolve(); 
+            })
+          );
       });
   };
 
   io.of("/game").on("connection", function(socket){
     // If the socket is a logged-in user AND a gameid is sent
     if(getUserIdFromSocket(socket) != null && socket.handshake.query["gid"] != null && Mongoose.Types.ObjectId.isValid(socket.handshake.query["gid"])){
-      var _userId = getUserIdFromSocket(socket);
-      var _gameId = socket.handshake.query["gid"];
+      var _userId = Mongoose.Types.ObjectId(getUserIdFromSocket(socket));
+      var _gameId = Mongoose.Types.ObjectId(socket.handshake.query["gid"]);
       var _room = "game_" + _gameId;
 
       socket.join(_room);
 
-      // Send User Game Info
-      sendUserGameInfo(socket, _gameId).catch(err => {throw err});
-
-      // Send Everyone the list of users connected to the game
-      sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {throw err});
+      // Send Users Game Info
+      sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+        // Send Users Connected Users
+        return sendRoomConnectedList(_room, "/game");
+      }).catch(err => {});
 
       // User sends a message to the game
       socket.on("game.chat.sendMessage", function(data){
         if(data.text != null && !( /^[\s]*$/.test(data.text) )){
-          User.findById(getUserIdFromSocket(socket)).exec()
-            .then(function(user){
-              io.of("/game").to(_room).emit("game.chat.message", {username: user.username, text: data.text});
-            }).catch(err => {throw err});
+          Game.findById(_gameId).exec()
+            .then(function(game){
+              return Promise.all(game.users.map(function(user){
+                if((user._id).toString() == _userId.toString() && user.isMuted) return Promise.reject();
+              })).then(function(){
+                // User is not muted
+                return User.findById(getUserIdFromSocket(socket)).exec()
+                  .then(function(user){
+                    io.of("/game").to(_room).emit("game.chat.message", {username: user.username, text: data.text});
+                  }).catch(err => {throw err});
+              }).catch(function(){
+                // User is muted;
+                return Promise.resolve();
+              });
+            });          
         }
+      });
+
+      // User leaves game
+      socket.on("game.leave", function(data){
+        removeUserFromGame(_userId, _gameId).then(function(){
+            // Send Users Game Info
+            return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                // Send Users Connected Users
+                return sendRoomConnectedList(_room, "/game");
+              }).then(function(){
+                return getSocketFromUserId(_userId)
+                  .then(function(socket){
+                    return sendUserInfo(socket);
+                  });
+              }).catch(err => {});
+          });
+      });
+
+      // User selects a team
+      socket.on("game.team.select", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            return new Promise((resolve, reject) => {
+              Promise.all(game.game.players.map(function(player){
+                if((player._id).toString() == _userId.toString()) return resolve();
+              }));
+              return reject();
+            }).then(function(){
+              // User is a player  
+              return Game.findOneAndUpdate({_id: _gameId, "game.players._id": _userId}, {$set: {"game.players.$.teamId": (data.teamId == 2 ? 2 : 1)}}).exec()
+                .then(function(){
+                  // Send Users Game Info
+                  return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                      // Send Users Connected Users
+                      return sendRoomConnectedList(_room, "/game");
+                    }).catch(err => {});
+                });
+            }).catch(function(){
+              // User is not a player
+              return Promise.resolve();
+            });
+          });
+      });
+
+      // User toggles ready
+      socket.on("game.ready.toggle", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            return new Promise((resolve, reject) => {
+              Promise.all(game.game.players.map(function(player){
+                if((player._id).toString() == _userId.toString()) return resolve(player.isReady);
+              }));
+              return reject();
+            }).then(function(isReady){
+              // User is a player  
+              return Game.findOneAndUpdate({_id: _gameId, "game.players._id": _userId}, {$set: {"game.players.$.isReady": !isReady}}).exec()
+                .then(function(){
+                  // Send Users Game Info
+                  return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                      // Send Users Connected Users
+                      return sendRoomConnectedList(_room, "/game");
+                    }).catch(err => {});
+                });
+            }).catch(function(){
+              // User is not a player
+              return Promise.resolve();
+            });
+          });
+      });
+
+      // Leader Only Commands
+      // Game Not Running
+      socket.on("game.leader.settings", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return Game.findOneAndUpdate({_id: _gameId}, {$set: {
+                title: data.title, 
+                isLocked: data.isLocked, 
+                "config.formatId": data.config.formatId, 
+                "config.typeId": data.config.typeId,
+                "config.typeCount": data.config.typeCount
+              }}).exec().then(function(){
+                  if(data.password != ""){
+                    return Game.findOneAndUpdate({_id: _gameId}, {$set: {password: data.password}}).exec()
+                      .then(function(){
+                        return Game.findById(_gameId).exec()
+                          .then(function(g){
+                            g.save();
+                          });
+                      });
+                  }
+                }).then(function(){
+                  // Send Users Game Info
+                  return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                      // Send Users Connected Users
+                      return sendRoomConnectedList(_room, "/game");
+                    }).catch(err => {});
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.delete", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return Promise.all(game.users.map(function(user){
+                return removeUserFromGame(user._id, _gameId).then(function(){
+                    return getSocketFromUserId(user._id)
+                      .then(function(socket){
+                        return sendUserInfo(socket);
+                      });
+                  });
+              })).then(function(){
+                return Game.findById(_gameId).remove().exec()
+                  .then(function(){
+                    return getOpenSocketsInRoomNamespace(_room, "/game").then(function(sockets){
+                      return Promise.all(sockets.map(function(socket){
+                        socket.emit("game.kicked", {});
+                      }));
+                    });
+                  });
+              });              
+            }
+          });
+      });
+
+      socket.on("game.leader.add", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return Promise.all(game.game.players.map(function(player){
+                    if((player._id).toString() == (user._id).toString()) return Promise.reject();
+                  })).then(function(){
+                    return Game.findOneAndUpdate({_id: _gameId}, {$push: {"game.players": {_id: user._id}}}).exec()
+                      .then(function(){
+                        // Send Users Game Info
+                        return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                            // Send Users Connected Users
+                            return sendRoomConnectedList(_room, "/game");
+                          }).catch(err => {});
+                      });
+                  }).catch(function(){
+
+                  });
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.remove", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return Game.findOneAndUpdate({_id: _gameId}, {$pull: {"game.players": {_id: user._id}}}).exec()
+                    .then(function(){
+                      // Send Users Game Info
+                      return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                          // Send Users Connected Users
+                          return sendRoomConnectedList(_room, "/game");
+                        }).catch(err => {});
+                    });
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.promote", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return Game.findOneAndUpdate({_id: _gameId}, {$set: {leaderId: user._id}}).exec()
+                    .then(function(){
+                      // Send Users Game Info
+                      return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                          // Send Users Connected Users
+                          return sendRoomConnectedList(_room, "/game");
+                        }).catch(err => {});
+                    });
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.mute", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return Game.findOneAndUpdate({_id: _gameId, "users._id": user._id}, {$set: {"users.$.isMuted": true}}).exec()
+                    .then(function(){
+                      // Send Users Game Info
+                      return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                          // Send Users Connected Users
+                          return sendRoomConnectedList(_room, "/game");
+                        }).catch(err => {});
+                    });
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.unmute", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return Game.findOneAndUpdate({_id: _gameId, "users._id": user._id}, {$set: {"users.$.isMuted": false}}).exec()
+                    .then(function(){
+                      // Send Users Game Info
+                      return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                          // Send Users Connected Users
+                          return sendRoomConnectedList(_room, "/game");
+                        }).catch(err => {});
+                    });
+                });
+            }
+          });
+      });
+
+      socket.on("game.leader.kick", function(data){
+        Game.findById(_gameId).exec()
+          .then(function(game){
+            if((game.leaderId).toString() == _userId.toString() && !game.game.isRunning){
+              return User.findOne({username: data.username}).exec()
+                .then(function(user){
+                  return removeUserFromGame(user._id, _gameId).then(function(){
+                    // Send Users Game Info
+                    return sendRoomGameInfo(_room, "/game", _gameId).then(function(){
+                        // Send Users Connected Users
+                        return sendRoomConnectedList(_room, "/game");
+                      }).then(function(){
+                        return getSocketFromUserId(_userId)
+                          .then(function(socket){
+                            return sendUserInfo(socket);
+                          });
+                      }).catch(err => {});
+                  }).then(function(){
+                    return getSocketFromUserId(user._id).then(function(socket){
+                        socket.emit("game.kicked", {});
+                      });
+                    });
+                });
+            }
+          });
       });
 
       socket.on("disconnect", function(){
@@ -441,7 +833,7 @@ module.exports = function(app){
         socket.leave(_room);
 
         // Send Everyone the list of users connected to the game
-        sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {console.error("Error: No users in room to broadcast.")});
+        sendRoomConnectedList(_room, "/game", "game.users.connected").catch(err => {});
       });
     }
   });

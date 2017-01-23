@@ -1,6 +1,6 @@
 'use strict';
 
-App.service("SocketService", function(SocketFactory, UserService, UsersService, AddFriendDialogService){
+App.service("SocketService", function(SocketFactory, UserService, UsersService, AddFriendDialogService, $window, $timeout, $mdDialog){
   var socket = SocketFactory;
 
   socket.on("connect", function(){
@@ -14,6 +14,21 @@ App.service("SocketService", function(SocketFactory, UserService, UsersService, 
 
     socket.on("user.search.results", function(data){
       AddFriendDialogService.setUsers(data);
+      for(var i=0; i<data.length; i++){
+        UsersService.setUser(data[i]);
+      }
+    });
+
+    socket.on("game.kicked", function(data){
+      $mdDialog.show(
+        $mdDialog.alert()
+          .clickOutsideToClose(true)
+          .title("Kicked")
+          .textContent("You have been kicked from the game.")
+          .ok("Ok")
+      ).finally(function(){
+        $window.location.href = "/lobby";
+      });
     });
   });
 
@@ -47,6 +62,10 @@ App.service("UserService", function(UsersService){
     return _data.username;
   };
 
+  this.getAvatar = function(){
+    return _data.avatar;
+  };
+
   this.getFriends = function(){
     return _data.friends;
   }
@@ -61,13 +80,39 @@ App.service("UserService", function(UsersService){
     return -1;
   };
 
+  this.getGames = function(){
+    return _data.games;
+  };
+
+  this.getDecks = function(){
+    return _data.decks;
+  };
+
   this.setUser = function(data){
     _data.username = data.username;
     _data.friends = data.friends;
+    _data.avatar = data.avatar;
+    _data.games = data.games;
+    _data.decks = data.decks;
     _data.pendingFriendRequests = data.pendingFriendRequests;
-    UsersService.setUser({username: data.username, statusId: data.statusId});
+    UsersService.setUser({
+      username: data.username, 
+      avatar: data.avatar, 
+      statusId: data.statusId
+    });
     for(var i=0; i<data.friends.length; i++){
-      UsersService.setUser({username: data.friends[i].username, statusId: data.friends[i].statusId});
+      UsersService.setUser({
+        username: data.friends[i].username, 
+        avatar: data.friends[i].avatar, 
+        statusId: data.friends[i].statusId
+      });
+    }
+    for(var i=0; i<data.pendingFriendRequests.length; i++){
+      UsersService.setUser({
+        username: data.pendingFriendRequests[i].username, 
+        avatar: data.pendingFriendRequests[i].avatar, 
+        statusId: data.pendingFriendRequests[i].statusId
+      });
     }
   };
 });

@@ -121,7 +121,7 @@ App.service("LobbyFilterService", function(LobbyGamesService, LobbySearchService
   };
 
   this.getGames = function(){
-    var games = LobbyGamesService.getGames().slice(0);;
+    var games = LobbyGamesService.getGames().slice(0);
 
     for(var i=0; i<LobbyGamesService.getGames().length; i++){
       var game = LobbyGamesService.getGames()[i];

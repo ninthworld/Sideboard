@@ -3,6 +3,7 @@
 <head>
   <%- include("partials/head") %>
   <link rel="stylesheet" href="./assets/css/game.css" />
+  <link rel="stylesheet" href="./assets/css/gamecontainers.css" />
 </head>
 
 <body ng-app="App" ng-controller="MainController as main" layout="column">
@@ -12,8 +13,80 @@
         <%- include("partials/toolbar") %>
 
         <div class="md-toolbar-tools" flex>
-          <h2>{{game.configService.getGameConfig().title}}</h2>
+          <label><md-icon class="md-material-icon game-toolbar-lock">{{(game.configService.isLocked() ? 'lock' : 'lock_open')}}</md-icon></label>
+          <h2 class="game-toolbar-title">{{game.configService.getTitle()}}</h2>
           <span flex></span>
+          
+          <md-button
+            class="md-raised"
+            ng-show="game.service.isPlayerByUsername(main.userService.getUsername()) && !game.service.isRunning()"
+            ng-click="game.showSelectDeckDialog($event)">
+            <md-icon class="md-material-icon">filter_none</md-icon> 
+            <!--Select Deck-->
+            {{"Vorel - Simic EDH".substring(0, 11);}}
+          </md-button>
+
+          <md-button
+            class="md-raised"
+            ng-show="game.service.isPlayerByUsername(main.userService.getUsername()) && !game.service.isRunning()"
+            ng-click="game.socketService.onReadyToggle()">
+            <md-icon class="md-material-icon">{{(game.service.isReadyByUsername(main.userService.getUsername()) ? 'close' : 'check')}}</md-icon> 
+            {{(game.service.isReadyByUsername(main.userService.getUsername()) ? 'Not Ready' : 'Ready')}}
+          </md-button>
+
+          <md-input-container 
+            md-theme="white"
+            class="game-toolbar-team" 
+            ng-show="game.service.isPlayerByUsername(main.userService.getUsername()) && !game.service.isRunning() && (game.configService.getTypeId() == 0)" 
+            flex>
+            <label>Team</label>
+            <md-select ng-model="typeCount" name="typeCount" ng-change="game.socketService.onTeamSelect(typeCount)">
+              <md-option ng-repeat="item in game.teams" value="{{item.value}}">{{item.name}}</md-option>
+            </md-select>
+          </md-input-container>
+
+          <span flex></span>
+
+          <md-button class="md-raised" ng-disabled="false" ng-show="game.service.isRunning()">
+            Pass Turn
+          </md-button>
+
+          <span flex></span>
+
+          <label class="fancy-label" ng-show="game.service.isRunning()">
+             (15:20) - Turn 2
+          </label>
+
+          <span flex></span>
+          
+          <md-button class="md-raised" ng-disabled="game.service.isRunning()" ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername())">
+            Start
+          </md-button>
+          <md-button class="md-raised" ng-disabled="!game.service.isRunning()" ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername())">
+            Stop
+          </md-button>
+
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="game.showGameSettingsDialog($event)">
+            <md-icon class="md-material-icon toolbar-icon">settings</md-icon>
+            <md-tooltip md-direction="bottom" class="large">Settings</md-tooltip>
+          </md-button>
+          <md-menu>
+            <md-button class="md-icon-button" ng-click="main.openMenu($mdOpenMenu, $event)">
+              <md-icon class="md-material-icon toolbar-icon">more_vert</md-icon>
+              <md-tooltip md-direction="bottom" class="large">Options</md-tooltip>
+            </md-button>
+            <md-menu-content>
+              <md-menu-item>
+                <md-button ng-click="game.showLeaveGameConfirmDialog($event)">
+                  <label class="fancy-label fancy-label-cursor">
+                    <md-icon class="md-material-icon">exit_to_app</md-icon>
+                    Leave Game
+                  </label>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
         </div>
         <div class="md-toolbar-tools game-toolbar" ng-class="game.toolbarService.getClass()">
           <md-button class="md-icon-button" aria-label="Game Chat" ng-click="game.sidebarService.onToggle()">
@@ -29,15 +102,26 @@
 
         <md-content layout="row" flex>
           <md-content layout="column" flex>
-            Stuff
+             <%- include("partials/gamecontainers") %>
           </md-content>
 
           <md-content layout="column" class="game-sidebar" ng-class="game.sidebarService.getClass()" md-whiteframe="1">
             <md-list class="game-users-list" flex>
-              <md-list-item ng-repeat="user in game.usersService.getUsers() | orderBy:['-statusId', 'username']">
-                <div class="game-users-list-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+              <md-list-item 
+                ng-repeat="user in game.usersService.getUsers() | orderBy:['-isConnected', '-statusId', 'username']" 
+                ng-class="{
+                  'game-users-list-trans': !user.isConnected, 
+                  'game-users-list-none': (!game.service.isPlayerByUsername(user.username)),
+                  'game-users-list-ready': game.service.isReadyByUsername(user.username),
+                  'game-users-list-notready': (game.service.isPlayerByUsername(user.username) && !game.service.isReadyByUsername(user.username))
+                }">
+
+                <div class="game-users-list-avatar-img" style="background-image: url({{main.usersService.getUserByUsername(user.username).avatar}})"></div>
                 <div layout="column" class="game-users-list-avatar-text-div" flex>
-                  <label class="game-users-list-avatar-text-username" flex>{{user.username}}</label>
+                  <label class="game-users-list-avatar-text-username" flex>
+                    <md-icon class="md-material-icon game-users-list-leader" ng-show="game.usersService.isLeaderByUsername(user.username)">grade</md-icon>
+                    {{user.username}}
+                  </label>
                   <div class="game-users-list-avatar-text-status" layout="row" flex>
                     <md-icon class="md-material-icon status-icon" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">lens</md-icon>
                     <label class="status-icon-text" ng-class="main.statusFactory.getClass(main.usersService.getUserByUsername(user.username).statusId)">
@@ -45,19 +129,95 @@
                     </label>
                   </div>
                 </div>
+                <label 
+                  class="fancy-label"
+                  ng-show="game.service.isPlayerByUsername(user.username)"
+                  ng-class="{
+                      'game-users-list-ffa': (game.configService.getTypeId() == 1),
+                      'game-users-list-team1': (game.configService.getTypeId() == 0) && (game.service.getPlayerByUsername(user.username).teamId == 1),
+                      'game-users-list-team2': (game.configService.getTypeId() == 0) && (game.service.getPlayerByUsername(user.username).teamId == 2)
+                    }">
+                  {{(game.configService.getTypeId() == 1 ? "FFA" : "Team " + game.service.getPlayerByUsername(user.username).teamId)}}
+                </label>
                 <md-menu>
                   <md-button class="md-icon-button" ng-click="main.openMenu($mdOpenMenu, $event)">
                     <md-icon class="md-material-icon game-users-list-avatar-options">more_vert</md-icon>
                   </md-button>
                   <md-menu-content>
+                    <!-- Leader Only -->
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername()) && !game.service.isPlayerByUsername(user.username)" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onAddPlayer(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">add_circle_outline</md-icon>
+                          Add Player
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername()) && game.service.isPlayerByUsername(user.username)" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onRemovePlayer(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">remove_circle_outline</md-icon>
+                          Remove Player
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername()) && !game.usersService.isLeaderByUsername(user.username)" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onPromoteLeader(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">grade</md-icon>
+                          Promote to Leader
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername()) && !user.isMuted" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onMutePlayer(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">volume_off</md-icon>
+                          Mute
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername()) && user.isMuted" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onUnmutePlayer(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">volume_up</md-icon>
+                          Unmute
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+                    <md-menu-item
+                      ng-show="game.usersService.isLeaderByUsername(main.userService.getUsername())" 
+                      ng-disabled="game.service.isRunning()">
+                      <md-button ng-click="game.socketService.onKickPlayer(user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">do_not_disturb</md-icon>
+                          Kick
+                        </label>
+                      </md-button>
+                    </md-menu-item>
+
+                    <!-- All -->
                     <md-menu-item>
-                      <md-button ng-click="null">
-                        <md-icon class="md-material-icon game-users-list-avatar-options">add_circle</md-icon>
-                        Send Friend Request
+                      <md-button ng-click="main.showProfileDialog($event, user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon game-users-list-avatar-options">portrait</md-icon>
+                          View Profile
+                        </label>
                       </md-button>
                     </md-menu-item>
                   </md-menu-content>
                 </md-menu>
+
               </md-list-item>
             </md-list>
             <md-content layout="column" class="game-chatbox" flex>

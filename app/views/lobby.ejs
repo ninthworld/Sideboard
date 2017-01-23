@@ -124,7 +124,7 @@
                     {{(game.game.isRunning ? 'In Progress' : 'Waiting')}}
                   </label>
 
-                  <span class="md-padding lobby-list-title">{{game.title}}</span>
+                  <label class="md-padding lobby-list-title">{{game.title}}</label>
 
                   <span flex></span>
 
@@ -152,7 +152,7 @@
           <md-content layout="column" class="lobbychat" ng-class="lobby.sidebarService.getClass()" md-whiteframe="1">
             <md-list class="lobbychat-list" flex>
               <md-list-item ng-repeat="user in lobby.usersService.getUsers() | orderBy:['-statusId', 'username']">
-                <div class="lobbychat-list-avatar-img" style="background-image: url(../assets/images/avatar.png)"></div>
+                <div class="lobbychat-list-avatar-img" style="background-image: url({{main.usersService.getUserByUsername(user.username).avatar}})"></div>
                 <div layout="column" class="lobbychat-list-avatar-text-div" flex>
                   <label class="lobbychat-list-avatar-text-username" flex>{{user.username}}</label>
                   <div class="lobbychat-list-avatar-text-status" layout="row" flex>
@@ -168,9 +168,11 @@
                   </md-button>
                   <md-menu-content>
                     <md-menu-item>
-                      <md-button ng-click="null">
-                        <md-icon class="md-material-icon lobbychat-list-avatar-options">add_circle</md-icon>
-                        Send Friend Request
+                      <md-button ng-click="main.showProfileDialog($event, user.username)">
+                        <label class="fancy-label fancy-label-cursor">
+                          <md-icon class="md-material-icon lobbychat-list-avatar-options">portrait</md-icon>
+                          View Profile
+                        </label>
                       </md-button>
                     </md-menu-item>
                   </md-menu-content>

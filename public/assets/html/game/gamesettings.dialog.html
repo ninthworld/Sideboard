@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="../assets/css/dialog.css" />
+<md-dialog class="gs-dialog">
+  <md-toolbar class="toolbar md-toolbar-tools">
+    <md-icon class="md-material-icon toolbar-icon">settings</md-icon>
+    <h2 style="padding-left: 12px;">Game Settings</h2>
+    <span flex></span>
+    <md-button class="md-icon-button" aria-label="Close" ng-click="cancel()">
+      <md-icon class="md-material-icon toolbar-icon">close</md-icon>
+    </md-button>
+  </md-toolbar>
+
+  <md-content layout="column" flex>
+
+    <md-content layout="row" class="gs-dialog-title md-padding">
+      <md-input-container class="gs-dialog-title-input" flex>
+        <label>Title</label>
+        <input ng-model="title" name="title" type="text" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+      </md-input-container>
+    </md-content>
+
+    <md-content layout="row" class="gs-dialog-password md-padding">
+      <md-switch ng-model="isLocked" class="md-primary gs-dialog-password-switch" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+        <md-icon class="md-material-icon">{{(isLocked ? 'lock' : 'lock_open')}}</md-icon>
+        <md-tooltip md-direction="top" class="large">{{(isLocked ? 'Locked' : 'Unlocked')}}</md-tooltip>
+      </md-switch>
+      <input type="hidden" name="isLocked" ng-value="isLocked">
+      <md-input-container class="gs-dialog-password-input" flex>
+        <label>{{(isLocked ? 'Password' : 'Password (Disabled)')}}</label>
+        <input ng-model="password" name="password" type="text" value="" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || !isLocked">
+      </md-input-container>
+    </md-content>
+    <md-content layout="column" class="gs-dialog-settings md-padding">
+      <label class="fancy-label">Settings</label>
+      <md-input-container class="gs-dialog-settings-format-input" flex>
+        <label>Format</label>
+        <md-select ng-model="formatId" name="formatId" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+          <md-option ng-repeat="item in gameFormatFactory.getFormats()" value="{{gameFormatFactory.getFormatId(item)}}">{{item}}</md-option>
+        </md-select>
+      </md-input-container>
+
+      <md-content layout="row" class="gs-dialog-settings-type">
+        <md-input-container class="gs-dialog-settings-type-input" flex>
+          <label>Type</label>
+          <md-select ng-model="typeId" name="typeId" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+            <md-option ng-repeat="item in gameTypeFactory.getTypes()" value="{{gameTypeFactory.getTypeId(item)}}">{{item}}</md-option>
+          </md-select>
+        </md-input-container>
+
+        <md-input-container class="gs-dialog-settings-players-input" flex>
+          <label>Players</label>
+          <md-select ng-model="typeCount" name="typeCount" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning() || (typeId == null)">
+            <md-option ng-repeat="item in playerCounts[typeId]" value="{{item.value}}">{{item.name}}</md-option>
+          </md-select>
+        </md-input-container>
+      </md-content>
+    </md-content>
+    <md-content layout="column" class="gs-dialog-save">
+      <md-button class="md-raised md-primary" ng-click="onSaveSettings()" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+        Save Settings
+      </md-button>
+      <md-button class="md-raised md-warn" ng-click="onDeleteGame()" ng-disabled="!game.usersService.isLeaderByUsername(userService.getUsername()) || game.service.isRunning()">
+        Delete Game
+      </md-button>
+    </md-content>
+  </md-content>
+  
+</md-dialog>

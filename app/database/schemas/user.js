@@ -4,7 +4,7 @@ var Mongoose = require("mongoose");
 var bcrypt = require("bcrypt-nodejs");
 
 const SALT_WORK_FACTOR = 10;
-const DEFAULT_USER_AVATAR = "/images/avatar.png";
+const DEFAULT_USER_AVATAR = "./assets/images/avatars/avatar.png";
 
 var UserSchema = new Mongoose.Schema({
   username: { type: String, required: true },

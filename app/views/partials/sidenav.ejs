@@ -7,7 +7,7 @@
 
   <md-list flex>
     <div layout="row" class="avatar" ng-click="sidenav.profileService.onToggle()">
-      <div class="avatar-img" style="background-image: url(./assets/images/avatar.png)"></div>
+      <div class="avatar-img" style="background-image: url({{main.userService.getAvatar()}})"></div>
       <md-icon class="md-material-icon status-icon avatar-status-icon" ng-class="main.statusFactory.getClass(main.userService.getStatusId())" ng-hide="sidenav.service.isOpen()">lens</md-icon>
       <div layout="column" class="avatar-text-div" ng-show="sidenav.service.isOpen()" flex>
         <label class="avatar-text-username" flex>{{main.userService.getUsername()}}</label>
@@ -40,8 +40,8 @@
         <span class="status-icon-text status-icon-invisible">Invisible</span>
         <span flex></span>
       </md-list-item>
-      <md-list-item ng-click="null">
-        <md-icon class="md-material-icon avatar-profile-icon">account_circle</md-icon>
+      <md-list-item ng-click="main.showProfileDialog($event, main.userService.getUsername())">
+        <md-icon class="md-material-icon avatar-profile-icon">portrait</md-icon>
         <span class="avatar-profile-text">Profile</span>
         <span flex></span>
         <md-icon class="md-material-icon avatar-profile-icon">chevron_right</md-icon>
@@ -71,7 +71,7 @@
       <span flex></span>
       <md-icon class="md-material-icon navbar-icon" ng-show="sidenav.service.isOpen()">chevron_right</md-icon>
     </md-list-item>
-    <md-list-item ng-click="null">
+    <md-list-item ng-click="main.showGamesDialog($event)">
       <md-icon class="md-material-icon navbar-icon">videogame_asset</md-icon>
       <span class="navbar-text" ng-show="sidenav.service.isOpen()">Games</span>
       <span flex></span>

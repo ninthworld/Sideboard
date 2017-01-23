@@ -28,7 +28,7 @@ App.factory("GameFormatFactory", function(){
     },
     getFormatId: function(formatText){
       for(var i=0; i<_data.length; i++){
-        if(formatText.toLowerCase() == _data[i].toLowerCase()) return i;
+        if(formatText != null && formatText.toLowerCase() == _data[i].toLowerCase()) return i;
       }
       return -1;
     },
@@ -46,7 +46,7 @@ App.factory("GameTypeFactory", function(){
     },
     getTypeId: function(typeText){
       for(var i=0; i<_data.length; i++){
-        if(typeText.toLowerCase() == _data[i].toLowerCase()) return i;
+        if(typeText != null && typeText.toLowerCase() == _data[i].toLowerCase()) return i;
       }
       return -1;
     },

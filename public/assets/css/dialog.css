@@ -120,3 +120,91 @@
   .cng-dialog-settings-players-input {
     margin-left: 8px !important;
   }
+
+/* Game Settings Dialog */
+  .gs-dialog {
+    overflow: hidden;
+    width: 600px;
+    min-height: 160px !important;
+    background-color: var(--grey-50);
+  }
+
+  .gs-dialog-title {
+    margin: 0px !important;
+  }
+
+  .gs-dialog-title-input {
+    margin: 0px !important;
+    margin-top: 16px !important;
+  }
+
+  .gs-dialog-password {
+    margin: 0px !important;
+  }
+
+  .gs-dialog-password-switch {
+    margin: 0px !important;
+  }
+
+  .gs-dialog-password-input {
+    margin: 0px !important;
+    margin-left: 16px !important;
+  }
+
+  .gs-dialog-settings-label {
+    background-color: var(--grey-100) !important;
+  }
+
+  .gs-dialog-settings {
+    background-color: var(--grey-100) !important;
+  }
+
+  .gs-dialog-settings-format-input {
+      margin: 0px !important;
+  }
+
+  .gs-dialog-settings-type {
+    background-color: var(--grey-100) !important;
+    margin-top: 16px !important;
+  }
+
+  .gs-dialog-settings-type-input {
+    margin-right: 8px !important;
+  }
+
+  .gs-dialog-settings-players-input {
+    margin-left: 8px !important;
+  }
+
+/* Games List */
+  .games-dialog {
+    overflow: hidden;
+    width: 600px;
+    min-height: 160px !important;
+    background-color: var(--grey-50);
+  }
+
+  .games-dialog-list {
+    background-color: white;
+  }
+
+  .games-dialog-list md-list-item {
+    padding: 8px;
+  }
+
+  .games-dialog-list md-list-item:nth-child(odd) {
+    background-color: var(--grey-200);
+  }
+
+  .games-dialog-list md-list-item:hover {
+    background-color: var(--grey-300);
+  }
+
+  .games-dialog-list md-list-item:hover {
+    background-color: var(--grey-300);
+  }
+
+  .games-dialog-list-title {
+    font-size: 16px;
+    overflow: hidden;
+  }

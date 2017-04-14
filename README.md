@@ -1,7 +1,7 @@
 # Sideboard
 An online Magic: the Gathering card game play area.
 
-![Lobby Screenshot](Sideboard/screenshots/ss1_lobby.png)
+![Lobby Screenshot](https://github.com/ninthworld/Sideboard/blob/master/screenshots/ss1_lobby.png)
 
 Web Server -
 * NodeJS / ExpressJS
@@ -27,4 +27,4 @@ In-progress -
 * Deck Editor
 * Game playable area
 
-![Game Settings](Sideboard/screenshots/ss2_gamesettings.png)
+![Game Settings](https://github.com/ninthworld/Sideboard/blob/master/screenshots/ss2_gamesettings.png)

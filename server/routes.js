@@ -5,8 +5,8 @@ var router = express.Router();
 var passport = require("passport");
 var Mongoose = require("mongoose");
 
-var User = require("../models/user");
-var Game = require("../models/game");
+var User = require("./models/user");
+var Game = require("./models/game");
 
 /*
  * GET

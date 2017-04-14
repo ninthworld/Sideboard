@@ -1,8 +1,8 @@
 'use strict';
 
-var config = require("../config");
+var config = require("./config");
 var Mongoose = require("mongoose");
-var logger = require("../logger");
+var logger = require("./logger");
 
 Mongoose.connect(config.dbURI);
 

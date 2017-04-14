@@ -1,6 +1,6 @@
 'use strict';
 
-var App = angular.module("App", ['ngMaterial', 'ngAnimate', 'FBAngular']);
+var App = angular.module("App", ['ngMaterial', 'ngAnimate', 'FBAngular', 'as.sortable']);
 
 App.directive('ngEnter', function () {
     return function (scope, element, attrs) {

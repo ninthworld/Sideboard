@@ -9,14 +9,62 @@ App.controller("GameController", function(GameSocketService, GameSidebarService,
   this.configService = GameConfigService;
   this.service = GameService;
   
-  this.color = ["blue", "blue", "red", "red"];
-  this.mtgCardRatio = 0.7;
-  this.cardRatio = 0.25;
-  this.getMinSize = function(id){
-    var element = document.getElementById("gc-container-"+id);
-    if(element != null) return (element.offsetWidth > element.offsetHeight ? element.offsetHeight : element.offsetWidth);
-    return 1;
+
+  this.dragControlListeners1 = {
+    accept: function (sourceItemScope, destSortableScope) {
+      return true;
+      // return sourceItemScope.itemScope.sortableScope.$id === destSortableScope.$id;
+    },
+    itemMoved: function (event) {
+      // event.source.itemScope.modelValue.status = event.dest.sortableScope.$parent.column.name;
+    },
+    orderChanged: function(ev){},
+    containment: "#board",
+    // clone: true,
+    // allowDuplicates: false
   };
+
+  this.dragControlListeners2 = {
+    accept: function (sourceItemScope, destSortableScope) {
+      return true;
+      // return sourceItemScope.itemScope.sortableScope.$id === destSortableScope.$id;
+    },
+    itemMoved: function(ev){
+      // ev.source.itemScope.modelValue.status = event.dest.sortableScope.$parent.column.name;
+    },
+    orderChanged: function(ev){},
+    containment: "#board",
+    // clone: true,
+    // allowDuplicates: false
+  };
+
+  this.players = [
+    {
+      battlefieldLeft: [],
+      battlefieldLeftListener: { containment: "#board" },
+
+      battlefieldRight: [],
+      battlefieldRightListener: { containment: "#board" },
+
+      battlefieldCreatures: [],
+      battlefieldCreaturesListener: { containment: "#board" },
+
+      battlefieldLands: [],
+      battlefieldLandsListener: { containment: "#board" },
+
+      hand: [],
+      battlefieldHandListener: { containment: "#board" }
+    }
+  ];
+
+  // this.color = ["blue", "blue", "red", "red"];
+  // this.mtgCardRatio = 0.7;
+  // this.cardRatio = 0.25;
+  // this.getMinSize = function(id){
+  //   var element = document.getElementById("gc-container-"+id);
+  //   if(element != null) return (element.offsetWidth > element.offsetHeight ? element.offsetHeight : element.offsetWidth);
+  //   return 1;
+  // };
 
   this.teams = [{name: 'Team 1', value: 1}, {name: 'Team 2', value: 2}];
 

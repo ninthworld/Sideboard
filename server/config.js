@@ -1,11 +1,7 @@
 'use strict';
 
-// module.exports = function(){
-//   return require("./config.json");
-// };
-
 module.exports = {
-  "dbURI": "mongodb://localhost/sideboard",
+  "dbURI": "mongodb://localhost/sideboard_v1",
   "sessionSecret": "supersecretprivatekey",
   "redis": {
     "host": "localhost",

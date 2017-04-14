@@ -1,0 +1,101 @@
+
+<md-card id="gc-container-2" layout="column" flex>
+
+    <div layout="row" flex>
+        
+    </div>
+
+</md-card>
+
+<md-card id="gc-container-1" layout="column" flex>
+
+    <div layout="column" id="board" flex>
+        <div layout="row" flex>
+
+            <div layout="column" class="gc-left-sidebar" flex>
+                <div layout="row" class="gc-graveyard" flex>
+                
+                </div>
+
+                <div layout="row" class="gc-deck" flex>
+                
+                </div>
+
+                <div layout="row" class="gc-other" flex>
+                
+                </div>
+
+            </div>
+
+            <div layout="row" class="gc-battlefield" flex>
+
+                <div layout="row" class="gc-battlefield-left" flex>
+                    <ul class="gc-list" data-as-sortable="game.players[0].battlefieldLeftListener" data-ng-model="game.players[0].battlefieldLeft">
+                        <li class="gc-list-item" data-ng-repeat="item in game.players[0].battlefieldLeft" data-as-sortable-item>
+                            <div class="gc-list-item-handle" data-as-sortable-item-handle>{{item.name}}</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div layout="column" class="gc-battlefield-center" flex>
+                    <div layout="row" class="gc-battlefield-creatures" flex>
+                    
+                    </div>
+
+                    <div layout="row" class="gc-battlefield-land" flex>
+                    
+                    </div>
+                </div>
+
+                <div layout="row" class="gc-battlefield-right" flex>
+                    <ul class="gc-list" data-as-sortable="game.players[0].battlefieldRightListener" data-ng-model="game.players[0].battlefieldRight">
+                        <li class="gc-list-item" data-ng-repeat="item in game.players[0].battlefieldRight" data-as-sortable-item>
+                            <div class="gc-list-item-handle" data-as-sortable-item-handle>{{item.name}}</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div layout="column" class="gc-exile" flex>
+            
+            </div>
+        </div>
+        <div layout="row" flex>
+            <div layout="row" class="gc-player" flex>
+            
+            </div>
+
+            <div layout="row" class="gc-hand" flex>
+            
+            </div>
+
+            <div layout="row" class="gc-commander" flex>
+            
+            </div>
+
+            <!--<div class="gc-zone-1">
+                <ul class="gc-list" data-as-sortable="game.dragControlListeners1" data-ng-model="game.items1">
+                    <li class="gc-list-item" data-ng-repeat="item in game.items1" data-as-sortable-item>
+                        <div class="gc-list-item-handle" data-as-sortable-item-handle>{{item.name}}</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="gc-zone-2">
+                <ul class="gc-list" data-as-sortable="game.dragControlListeners2" data-ng-model="game.items2">
+                    <li class="gc-list-item" data-ng-repeat="item in game.items2" data-as-sortable-item>
+                        <div class="gc-list-item-handle" data-as-sortable-item-handle>{{item.name}}</div>
+                    </li>
+                </ul>        
+            </div>-->
+
+            <!--
+            <div class="mtg-card-container">
+                <div class="mtg-card" ng-class="{'mtg-card-rotate': game._toggle}" ng-dblclick="game.onToggle()"></div>
+            </div>
+            -->
+
+        </div>
+    </div>
+
+</md-card>

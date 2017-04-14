@@ -8,17 +8,17 @@ var bodyParser = require("body-parser");
 var flash = require("connect-flash");
 
 // App Components
-var routes = require("./app/routes");
-var session = require("./app/session");
-var passport = require("./app/auth")();
-var ioServer = require("./app/socket")(app);
-var logger = require("./app/logger");
+var routes = require("./server/routes");
+var session = require("./server/session");
+var passport = require("./server/auth")();
+var ioServer = require("./server/socket")(app);
+var logger = require("./server/logger");
 
 // Port
 var port = process.env.PORT || 8080;
 
 // View engine
-app.set("views", path.join(__dirname, "app/views"));
+app.set("views", path.join(__dirname, "server/views"));
 app.set("view engine", "ejs");
 
 // Middleware

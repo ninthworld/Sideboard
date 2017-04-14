@@ -1,12 +1,12 @@
 'use strict';
 
-var config = require("../config");
+var config = require("./config");
 var passport = require("passport");
-var logger = require("../logger");
+var logger = require("./logger");
 
 var LocalStrategy = require("passport-local").Strategy;
 
-var User = require("../models/user");
+var User = require("./models/user");
 
 module.exports = function(){
   passport.serializeUser(function(user, done){

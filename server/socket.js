@@ -1,12 +1,12 @@
 'use strict';
 
 var Mongoose = require("mongoose");
-var config = require("../config");
+var config = require("./config");
 var redis = require("redis").createClient;
 var adapter = require("socket.io-redis");
 
-var User = require("../models/user");
-var Game = require("../models/game");
+var User = require("./models/user");
+var Game = require("./models/game");
 
 module.exports = function(app){
   var server = require("http").createServer(app);
@@ -22,7 +22,7 @@ module.exports = function(app){
   io.adapter(adapter({pubClient, subClient}));
 
   io.use((socket, next) => {
-    require("../session")(socket.request, {}, next);
+    require("./session")(socket.request, {}, next);
   });
 
   // Return: UserId from a Socket

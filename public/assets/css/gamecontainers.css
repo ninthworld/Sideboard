@@ -1,4 +1,59 @@
+.gc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    height: 100%;
+}
+
+.gc-list-item {
+    /*float: left;*/
+}
+
+.gc-list-item-handle {
+    background-image: url(../images/mtg/back.jpg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 57px;
+    height: 80px;
+    margin: auto;
+    color: white;
+}
+
+.gc-list-item-handle:hover {
+    cursor: -webkit-grab;
+}
+
+.as-sortable-item,
+.as-sortable-placeholder {
+    width: 80px;
+    height: 80px;
+    float: left;
+}
+
+.as-sortable-placeholder {
+    background-color: var(--grey-500);
+    opacity: 0.5;
+}
+
+.as-sortable-dragging { 
+    /*position: fixed;*/
+    display: none;
+    visibility: hidden;
+}
+
 /* Game Containers */
+.gc-left-sidebar {
+    
+}
+
+.gc-battlefield {
+
+}
+
+
+
 .gc-label {
     white-space: nowrap;
     text-transform: uppercase;
@@ -6,4 +61,25 @@
     font-variant: inherit;
     font-family: inherit;
     color: white;
+}
+
+/** Card ratio is ~0.7 **/
+.mtg-card-container {
+    width: 80px;
+    height: 80px;
+    /*border: 1px solid red;*/
+}
+.mtg-card {
+    background-image: url(/assets/images/mtg/back.jpg); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    width: 57px; 
+    height: 80px;
+    margin: 0 auto;
+    border: 1px solid black;
+    transition: all 0.25s ease-in-out;
+}
+
+.mtg-card-rotate {
+    transform: rotate(90deg);
 }
